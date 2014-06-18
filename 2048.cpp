@@ -7,25 +7,27 @@ using namespace std;
 
 #define FILENAME "2048.sav"
 
-short int power2(short int);
-short int status_checking(short int **, short int);
-short int shift(short int **, short int, short int);
-void output(short int **, short int, int);
+// Нет смысла отдельно объявлять сигнатуру функций, а затем сразу писать сами функции.
+// Если функция полностью описана до main, то она всё-равно будет inline.
+short power2(short);
+short status_checking(short **, short);
+short shift(short **, short, short);
+void output(short **, short, int);
 
-short int power2(short int n)
+short power2(short n)
 {
-    short int res = 1;
-    for(short int i = 0; i < n; i++)
+    short res = 1;
+    for(short i = 0; i < n; i++)
         res *= 2;
     return res;
 }
 
 //0 - continue, 1 - lose, 2 - win
-short int status_checking(short int **a, short int W)
+short status_checking(short **a, short W)
 {
-    short int counter = 0, movements = 0;
-    for(short int j = 0; j < W; j++)
-        for(short int i = 0; i < W; i++)
+    short counter = 0, movements = 0;
+    for(short j = 0; j < W; j++)
+        for(short i = 0; i < W; i++)
         {
             if(a[j][i] == 11)
                 return 2;
@@ -34,15 +36,16 @@ short int status_checking(short int **a, short int W)
         }
     if(counter == W * W)
     {
-        short int **a_temp = new short int *[W];
-        for(short int i = 0; i < W; i++)
-            a_temp[i] = new short int [W];
-        for(short int j = 0; j < W; j++)
-            for(short int i = 0; i < W; i++)
+        // Читай коммент в функции main
+        short **a_temp = new short *[W];
+        for(short i = 0; i < W; i++)
+            a_temp[i] = new short [W];
+        for(short j = 0; j < W; j++)
+            for(short i = 0; i < W; i++)
                 a_temp[j][i] = a[j][i];
-        for(short int i = 0; i < 4; i++)
+        for(short i = 0; i < 4; i++)
             movements += shift(a_temp, W, i);
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
             delete [] a_temp[i];
         delete [] a_temp;
         if(movements == 0)
@@ -53,24 +56,24 @@ short int status_checking(short int **a, short int W)
 
 //dir: odd - horizontal, even - vertical
 //0 - not shifted, 1 - shifted
-short int shift(short int **a, short int W, short int dir)
+short shift(short **a, short W, short dir)
 {
     bool changed = false;
-    short int **a_rec = new short int *[W];
-    for(short int i = 0; i < W; i++)
-        a_rec[i] = new short int [W];
-    for(short int j = 0; j < W; j++)
-        for(short int i = 0; i < W; i++)
+    short **a_rec = new short *[W];
+    for(short i = 0; i < W; i++)
+        a_rec[i] = new short [W];
+    for(short j = 0; j < W; j++)
+        for(short i = 0; i < W; i++)
             a_rec[j][i] = a[j][i];
     //^
     if(dir == 0)
     {
         //every row..
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
         {
-            short int not_0 = 0;
+            short not_0 = 0;
             //erasing spaces
-            for(short int j = 0; j < W; j++)
+            for(short j = 0; j < W; j++)
                 if(a[j][i] != 0)
                 {
                     not_0++;
@@ -81,7 +84,7 @@ short int shift(short int **a, short int W, short int dir)
                     }
                 }
             //calculating summas
-            for(short int j = 0; j < W - 1; j++)
+            for(short j = 0; j < W - 1; j++)
             {
                 if(a[j][i] != 0)
                 {
@@ -93,7 +96,7 @@ short int shift(short int **a, short int W, short int dir)
                 }
                 else
                 {
-                    for(short int k = j; k < W - 1; k++)
+                    for(short k = j; k < W - 1; k++)
                         a[k][i] = a[k + 1][i];
                     a[W - 1][i] = 0;
                     if(a[j][i] != 0)
@@ -106,11 +109,11 @@ short int shift(short int **a, short int W, short int dir)
     if(dir == 1)
     {
         //every row..
-        for(short int j = 0; j < W; j++)
+        for(short j = 0; j < W; j++)
         {
-            short int not_0 = 0;
+            short not_0 = 0;
             //erasing spaces
-            for(short int i = 0; i < W; i++)
+            for(short i = 0; i < W; i++)
                 if(a[j][i] != 0)
                 {
                     not_0++;
@@ -121,7 +124,7 @@ short int shift(short int **a, short int W, short int dir)
                     }
                 }
             //calculating summas
-            for(short int i = 0; i < W - 1; i++)
+            for(short i = 0; i < W - 1; i++)
             {
                 if(a[j][i] != 0)
                 {
@@ -133,7 +136,7 @@ short int shift(short int **a, short int W, short int dir)
                 }
                 else
                 {
-                    for(short int k = i; k < W - 1; k++)
+                    for(short k = i; k < W - 1; k++)
                         a[j][k] = a[j][k + 1];
                     a[j][W - 1] = 0;
                     if(a[j][i] != 0)
@@ -146,11 +149,11 @@ short int shift(short int **a, short int W, short int dir)
     if(dir == 2)
     {
         //every row..
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
         {
-            short int not_0 = W - 1;
+            short not_0 = W - 1;
             //erasing spaces
-            for(short int j = W - 1; j >= 0; j--)
+            for(short j = W - 1; j >= 0; j--)
                 if(a[j][i] != 0)
                 {
                     not_0--;
@@ -161,7 +164,7 @@ short int shift(short int **a, short int W, short int dir)
                     }
                 }
             //calculating summas
-            for(short int j = W - 1; j > 0; j--)
+            for(short j = W - 1; j > 0; j--)
             {
                 if(a[j][i] != 0)
                 {
@@ -173,7 +176,7 @@ short int shift(short int **a, short int W, short int dir)
                 }
                 else
                 {
-                    for(short int k = j; k > 0; k--)
+                    for(short k = j; k > 0; k--)
                         a[k][i] = a[k - 1][i];
                     a[0][i] = 0;
                     if(a[j][i] != 0)
@@ -186,11 +189,11 @@ short int shift(short int **a, short int W, short int dir)
     if(dir == 3)
     {
         //every row..
-        for(short int j = 0; j < W; j++)
+        for(short j = 0; j < W; j++)
         {
-            short int not_0 = W - 1;
+            short not_0 = W - 1;
             //erasing spaces
-            for(short int i = W - 1; i >= 0; i--)
+            for(short i = W - 1; i >= 0; i--)
                 if(a[j][i] != 0)
                 {
                     not_0--;
@@ -201,7 +204,7 @@ short int shift(short int **a, short int W, short int dir)
                     }
                 }
             //calculating summas
-            for(short int i = W - 1; i > 0; i--)
+            for(short i = W - 1; i > 0; i--)
             {
                 if(a[j][i] != 0)
                 {
@@ -213,7 +216,7 @@ short int shift(short int **a, short int W, short int dir)
                 }
                 else
                 {
-                    for(short int k = i; k > 0; k--)
+                    for(short k = i; k > 0; k--)
                         a[j][k] = a[j][k - 1];
                     a[j][0] = 0;
                     if(a[j][i] != 0)
@@ -223,15 +226,15 @@ short int shift(short int **a, short int W, short int dir)
         }
     }
     //checking for changes
-    for(short int j = 0; j < W & !changed; j++)
-        for(short int i = 0; i < W; i++)
+    for(short j = 0; j < W & !changed; j++)
+        for(short i = 0; i < W; i++)
             if(a[j][i] != a_rec[j][i])
             {
                 changed = true;
                 break;
             }
 
-    for(short int i = 0; i < W; i++)
+    for(short i = 0; i < W; i++)
         delete [] a_rec[i];
     delete [] a_rec;
 
@@ -240,17 +243,17 @@ short int shift(short int **a, short int W, short int dir)
     return 0;
 }
 
-void output(short int **a, short int W, int counter)
+void output(short **a, short W, int counter)
 {
     cout << "\033[2J\033[1;1H" << counter << " step\n";
     cout << '#';
-    for(short int i = 0; i < W; i++)
+    for(short i = 0; i < W; i++)
         cout << "#######";
     cout << "#\n";
-    for(short int j = 0; j < W; j++)
+    for(short j = 0; j < W; j++)
     {
         cout << '#';
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
         {
             if(a[j][i] == 0)
                 cout << setw(7) << ' ';
@@ -266,7 +269,7 @@ void output(short int **a, short int W, int counter)
                 cout << " ===== ";
         }
         cout << "#\n#";
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
         {
             if(a[j][i] == 0)
                 cout << setw(7) << ' ';
@@ -282,7 +285,7 @@ void output(short int **a, short int W, int counter)
                 cout << '[' << setw(5) << power2(a[j][i]) << ']';
         }
         cout << "#\n#";
-        for(short int i = 0; i < W; i++)
+        for(short i = 0; i < W; i++)
         {
             if(a[j][i] == 0)
                 cout << setw(7) << ' ';
@@ -300,27 +303,27 @@ void output(short int **a, short int W, int counter)
         cout << "#\n";
     }
     cout << '#';
-    for(short int i = 0; i < W; i++)
+    for(short i = 0; i < W; i++)
         cout << "#######";
     cout << "#\n";
 }
 
-void loadW(short int &W)
+void loadW(short &W)
 {
     ifstream input(FILENAME, ios::in | ios::binary);
-    input.read(reinterpret_cast <char *> (&W), sizeof(short int));
+    input.read(reinterpret_cast <char *> (&W), sizeof(short));
     input.close();
 }
 
-void loadfile(short int **a, int &counter)
+void loadfile(short **a, int &counter)
 {
-    short int W;
+    short W;
     ifstream input(FILENAME, ios::in | ios::binary);
-    input.read(reinterpret_cast <char *> (&W), sizeof(short int));
+    input.read(reinterpret_cast <char *> (&W), sizeof(short));
     input.read(reinterpret_cast <char *> (&counter), sizeof(int));
-    for(short int j = 0; j < W; j++)
-        for(short int i = 0; i < W; i++)
-            input.read(reinterpret_cast <char *> (&a[j][i]), sizeof(short int));
+    for(short j = 0; j < W; j++)
+        for(short i = 0; i < W; i++)
+            input.read(reinterpret_cast <char *> (&a[j][i]), sizeof(short));
     input.close();
 }
 
@@ -330,7 +333,7 @@ int main(void)
     cout << fixed;
 
     char sym;
-    short int dir, x, y, W;
+    short dir, x, y, W;
     int counter = 0;
     bool exit = false, load, ismoved;
 
@@ -345,12 +348,31 @@ int main(void)
         cin >> W;
     }
 
-    short int **a = new short int *[W];
-    for(short int i = 0; i < W; i++)
-        a[i] = new short int [W];
+    // Операция выделения памяти достаточно дорогая, и выделять её в цикле,
+    // вот так явно - не эффективно. Лучше выделить сразу большой одномерный
+    // кусок памяти, размером W*W. Для этого случая нужна будет функция, которая
+    // будет принимать указатель на одномерный массив, его размер и координаты (x, y).
+    // Например:
+    //
+    //     short get_value(short *a, short W, short x, short y);
+    //
+    // Вызов этой функции можно замакросить через #define, скажем указав в дефайне
+    // дефолтное название переменной, в которой лежит размен (W). Но в таком случае
+    // придётся везде предоставлять размер массива в переменной с одним и тем же
+    // названием. Например (покахивает лиспом):
+    //
+    //     #define i(a, x, y) \
+    //       (get_value((a), W, (x), (y)))
+    //
+    // Но конечно дефайны - это треш, и постулаты с++ гласят, что надо использовать
+    // классы и месить ими.
+    //
+    short **a = new short *[W];
+    for(short i = 0; i < W; i++)
+        a[i] = new short [W];
 
-    for(short int j = 0; j < W; j++)
-        for(short int i = 0; i < W; i++)
+    for(short j = 0; j < W; j++)
+        for(short i = 0; i < W; i++)
             a[j][i] = 0;
 
     //initial figures
@@ -402,11 +424,11 @@ int main(void)
                 case 'f':
                 {
                     ofstream output(FILENAME, ios::out | ios::binary);
-                    output.write(reinterpret_cast <char *> (&W), sizeof(short int));
+                    output.write(reinterpret_cast <char *> (&W), sizeof(short));
                     output.write(reinterpret_cast <char *> (&counter), sizeof(int));
-                    for(short int j = 0; j < W; j++)
-                        for(short int i = 0; i < W; i++)
-                            output.write(reinterpret_cast <char *> (&a[j][i]), sizeof(short int));
+                    for(short j = 0; j < W; j++)
+                        for(short i = 0; i < W; i++)
+                            output.write(reinterpret_cast <char *> (&a[j][i]), sizeof(short));
                     output.close();
                 }
                     cout << "Game saved.\n";
@@ -438,7 +460,7 @@ int main(void)
         //output
         output(a, W, counter);
         //
-        short int status = status_checking(a, W);
+        short status = status_checking(a, W);
         switch(status)
         {
             case 1:
@@ -454,7 +476,7 @@ int main(void)
         }
     }
 
-    for(short int i = 0; i < W; i++)
+    for(short i = 0; i < W; i++)
         delete [] a[i];
     delete [] a;
 
