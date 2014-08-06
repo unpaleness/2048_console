@@ -1,9 +1,10 @@
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <ctime>
-#include <cstdlib>
+#include <cmath>
 #include <conio.h>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <windows.h>
 using namespace std;
 
@@ -439,7 +440,10 @@ int main(void)
             }
         while(a[y][x] != 0);
         //some insane random figure to add }=)
-        a[y][x] = 1;
+        // a[y][x] = short(16 - ceil(log(rand())/log(2.0)));
+        // a[y][x] = 1;
+        if(rand() % 10 > 1) a[y][x] = 1;
+        else a[y][x] = 2;
         //output
         output(a, W, counter);
         //
