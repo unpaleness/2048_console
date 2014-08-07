@@ -10,7 +10,6 @@
 using namespace std;
 
 #define FILENAME "2048.sav"
-#define BASE 2
 char
     sym_border_l[] = " ||||((({{{<<<[[[",
     sym_border_r[] = " ||||)))}}}>>>]]]",
@@ -59,23 +58,20 @@ int main(void)
         cin >> W;
     }
 
-    short **a = new short *[W];
-    for(short i = 0; i < W; i++)
-        a[i] = new short [W];
+    Board board(W);
+    board.nullification();
 
-    for(short j = 0; j < W; j++)
-        for(short i = 0; i < W; i++)
-            a[j][i] = 0;
+    // short **a = new short *[W];
+    // for(short i = 0; i < W; i++)
+    //     a[i] = new short [W];
+
+    // for(short j = 0; j < W; j++)
+    //     for(short i = 0; i < W; i++)
+    //         a[j][i] = 0;
 
     //initial figures
-    a[rand() % W][rand() % W] = 1;
-    do
-    {
-        x = rand() % W;
-        y = rand() % W;
-    }
-    while(a[y][x] != 0);
-    a[y][x] = 1;
+    board.put_random();
+    board.put_random();
 
     if(load)
     {

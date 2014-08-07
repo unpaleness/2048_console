@@ -7,74 +7,118 @@
 
 #include "count.h"
 
+class Output
+{
+    Output(Board board) { _board = &board; }
+    ~Output() {}
+
+    void output(short **a, short W, int counter)
+    {
+        short fig_size = length_of_figure(pow(BASE, max_val(a, W)));
+        system("cls");
+        cout << counter << " step\n";
+        cout << '#';
+        for(short i = 0; i < W * (fig_size + 2); i++)
+            cout << '#';
+        cout << "#\n";
+        for(short j = 0; j < W; j++)
+        {
+            cout << '#';
+            for(short i = 0; i < W; i++)
+            {
+                cout << ' ';
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
+                cout << ' ';
+            }
+            cout << "#\n#";
+            for(short i = 0; i < W; i++)
+            {
+                cout << sym_border_l[a[j][i]];
+                cout << setw(fig_size);
+                if(a[j][i] == 0) cout << ' ';
+                else cout << short(pow(BASE, a[j][i]));
+                cout << sym_border_r[a[j][i]];
+            }
+            cout << "#\n#";
+            for(short i = 0; i < W; i++)
+            {   cout << ' ';
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
+                cout << ' ';
+            }
+            cout << "#\n";
+        }
+        cout << '#';
+        for(short i = 0; i < W * (fig_size + 2); i++)
+            cout << '#';
+        cout << "#\n";
+    }
+
+private:
+
+    Board *_board;
+
+    //returns the length of required figure
+    int length_of_figure(int figure)
+    {
+        int res = 0;
+        while(figure)
+        {
+            figure = (figure - (figure % 10)) / 10;
+            res++;
+        }
+        return res;
+    }
+};
+
 int length_of_figure(int figure)
 {
-
+    int res = 0;
+    while(figure)
+    {
+        figure = (figure - (figure % 10)) / 10;
+        res++;
+    }
+    return res;
 }
 
 void output(short **a, short W, int counter)
 {
+    short fig_size = length_of_figure(pow(BASE, max_val(a, W)));
     system("cls");
     cout << counter << " step\n";
     cout << '#';
-    for(short i = 0; i < W; i++)
-        cout << "#######";
+    for(short i = 0; i < W * (fig_size + 2); i++)
+        cout << '#';
     cout << "#\n";
     for(short j = 0; j < W; j++)
     {
         cout << '#';
         for(short i = 0; i < W; i++)
         {
-            if(a[j][i] == 0)
-                cout << setw(7) << ' ';
-            if(a[j][i] > 0 & a[j][i] <= 4)
-                cout << " ----- ";
-            if(a[j][i] > 4 & a[j][i] <= 7)
-                cout << " ~~~~~ ";
-            if(a[j][i] > 7 & a[j][i] <= 10)
-                cout << " +++++ ";
-            if(a[j][i] > 10 & a[j][i] <= 13)
-                cout << " ***** ";
-            if(a[j][i] > 13 & a[j][i] <= 16)
-                cout << " ===== ";
+            cout << ' ';
+            for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
+            cout << ' ';
         }
         cout << "#\n#";
         for(short i = 0; i < W; i++)
         {
-            if(a[j][i] == 0)
-                cout << setw(7) << ' ';
-            if(a[j][i] > 0 & a[j][i] <= 4)
-                cout << '|' << setw(5) << short(pow(BASE, a[j][i])) << '|';
-            if(a[j][i] > 4 & a[j][i] <= 7)
-                cout << '(' << setw(5) << short(pow(BASE, a[j][i])) << ')';
-            if(a[j][i] > 7 & a[j][i] <= 10)
-                cout << '{' << setw(5) << short(pow(BASE, a[j][i])) << '}';
-            if(a[j][i] > 10 & a[j][i] <= 13)
-                cout << '<' << setw(5) << short(pow(BASE, a[j][i])) << '>';
-            if(a[j][i] > 13 & a[j][i] <= 16)
-                cout << '[' << setw(5) << short(pow(BASE, a[j][i])) << ']';
+            cout << sym_border_l[a[j][i]];
+            cout << setw(fig_size);
+            if(a[j][i] == 0) cout << ' ';
+            else cout << short(pow(BASE, a[j][i]));
+            cout << sym_border_r[a[j][i]];
         }
         cout << "#\n#";
         for(short i = 0; i < W; i++)
-        {
-            if(a[j][i] == 0)
-                cout << setw(7) << ' ';
-            if(a[j][i] > 0 & a[j][i] <= 4)
-                cout << " ----- ";
-            if(a[j][i] > 4 & a[j][i] <= 7)
-                cout << " ~~~~~ ";
-            if(a[j][i] > 7 & a[j][i] <= 10)
-                cout << " +++++ ";
-            if(a[j][i] > 10 & a[j][i] <= 13)
-                cout << " ***** ";
-            if(a[j][i] > 13 & a[j][i] <= 16)
-                cout << " ===== ";
+        {   cout << ' ';
+            for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
+            cout << ' ';
         }
         cout << "#\n";
     }
     cout << '#';
-    for(short i = 0; i < W; i++)
-        cout << "#######";
+    for(short i = 0; i < W * (fig_size + 2); i++)
+        cout << '#';
     cout << "#\n";
 }
 
