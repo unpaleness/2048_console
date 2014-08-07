@@ -10,22 +10,26 @@
 
 class Board
 {
-    Board()
-    {
-        _size = DEFAULT_SIZE;
-        memory_alloc(_size, _board);
-    }
-    Board(short size)
+    // Board()
+    // {
+    //     _size = DEFAULT_SIZE;
+    //     _counter = 0;
+    //     memory_alloc(_size, _board);
+    // }
+    Board(short size, int counter)
     {
         _size = size;
+        _counter = counter;
         memory_alloc(_size, _board);
     }
     ~Board() { memory_free(_size, _board); }
 
-    int counter = 0;
+    int counter(void) { return _counter; }
+    const short **board() { return _board; }
+    short size(void) { return _size; }
 
-    //sets a initial value (1) on free space of board
-    void put_random()
+    //sets initial value (1) on free space of board
+    void put_random(void)
     {
         do
         {
@@ -37,7 +41,7 @@ class Board
     }
 
     //counts max value on the board
-    short max_val()
+    short max_val(void)
     {
         short res = 0;
         for(short j = 0; j < _size; j++)
@@ -47,7 +51,7 @@ class Board
     }
 
     //0 - continue, 1 - lose, 2 - win
-    short status_checking()
+    short status_checking(void)
     {
         short counter = 0, movements = 0;
         for(short j = 0; j < _size; j++)
@@ -268,6 +272,7 @@ private:
 
     short _size;
     short **_board;
+    int _counter;
 
     //allocates memory for some matrix
     void memory_alloc(short size, short **&matrix)

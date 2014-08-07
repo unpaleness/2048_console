@@ -58,7 +58,7 @@ int main(void)
         cin >> W;
     }
 
-    Board board(W);
+    Board board(W, counter);
     board.nullification();
 
     // short **a = new short *[W];
