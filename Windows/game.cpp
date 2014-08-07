@@ -1,38 +1,36 @@
-#include <cmath>
-#include <conio.h>
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <windows.h>
+#ifndef _GAME_CPP_
+#define _GAME_CPP_
 
-using namespace std;
+// #include <cmath>
+// #include <conio.h>
+// #include <cstdlib>
+// #include <ctime>
+// #include <fstream>
+// #include <iomanip>
+// #include <iostream>
+// #include <windows.h>
 
-#define FILENAME "2048.sav"
-char
-    sym_border_l[] = " ||||((({{{<<<[[[",
-    sym_border_r[] = " ||||)))}}}>>>]]]",
-    sym_horizontal[] = " ----~~~+++***===";
+// using namespace std;
 
+#include "board.h"
 #include "output.h"
-#include "count.h"
+#include "menu.h"
 
-void loadW(short &W)
+void load_size(short &size)
 {
     ifstream input(FILENAME, ios::in | ios::binary);
-    input.read(reinterpret_cast <char *> (&W), sizeof(short));
+    input.read(reinterpret_cast <char *> (&size), sizeof(short));
     input.close();
 }
 
 void loadfile(short **a, int &counter)
 {
-    short W;
+    short size;
     ifstream input(FILENAME, ios::in | ios::binary);
-    input.read(reinterpret_cast <char *> (&W), sizeof(short));
+    input.read(reinterpret_cast <char *> (&size), sizeof(short));
     input.read(reinterpret_cast <char *> (&counter), sizeof(int));
-    for(short j = 0; j < W; j++)
-        for(short i = 0; i < W; i++)
+    for(short j = 0; j < size; j++)
+        for(short i = 0; i < size; i++)
             input.read(reinterpret_cast <char *> (&a[j][i]), sizeof(short));
     input.close();
 }
@@ -42,44 +40,50 @@ int main(void)
     srand(time(0));
     cout << fixed;
 
+    Menu menu;
+    Board board;
+    Output output(board, menu);
+
     char sym;
-    short dir, x, y, W;
+    short dir, x, y, size;
     int counter = 0;
     bool exit = false, load, ismoved;
 
-    cout << "Do you want to load previously saved game? (1 - yes, 0 - no): ";
-    cin >> load;
+    // cout << "Do you want to load previously saved game? (1 - yes, 0 - no): ";
+    // cin >> load;
 
-    if(load)
-        loadW(W);
-    else
-    {
+    // if(load)
+    //     load_size(size);
+    // else
+    // {
         cout << "Size = ";
-        cin >> W;
-    }
+        cin >> size;
+    // }
 
-    Board board(W, counter);
-    board.nullification();
+    board.init(size);
 
-    // short **a = new short *[W];
-    // for(short i = 0; i < W; i++)
-    //     a[i] = new short [W];
+    // short **a = new short *[size];
+    // for(short i = 0; i < size; i++)
+    //     a[i] = new short [size];
 
-    // for(short j = 0; j < W; j++)
-    //     for(short i = 0; i < W; i++)
+    // for(short j = 0; j < size; j++)
+    //     for(short i = 0; i < size; i++)
     //         a[j][i] = 0;
 
     //initial figures
     board.put_random();
     board.put_random();
 
-    if(load)
-    {
-        loadfile(a, counter);
-        counter--;
-    }
+    // if(load)
+    // {
+    //     loadfile(board.board(), counter);
+    //     counter--;
+    // }
 
-    output(a, W, counter);
+    // board.counter(counter);
+
+    // board.print_info();
+    output.output();
 
     /**************\
     |* main cycle *|
@@ -112,13 +116,13 @@ int main(void)
                     break;
                 case 'f':
                 {
-                    ofstream output(FILENAME, ios::out | ios::binary);
-                    output.write(reinterpret_cast <char *> (&W), sizeof(short));
-                    output.write(reinterpret_cast <char *> (&counter), sizeof(int));
-                    for(short j = 0; j < W; j++)
-                        for(short i = 0; i < W; i++)
-                            output.write(reinterpret_cast <char *> (&a[j][i]), sizeof(short));
-                    output.close();
+                    ofstream out_file(FILENAME, ios::out | ios::binary);
+                    out_file.write(reinterpret_cast <char *> (board.size()), sizeof(short));
+                    out_file.write(reinterpret_cast <char *> (board.counter()), sizeof(int));
+                    for(short j = 0; j < size; j++)
+                        for(short i = 0; i < size; i++)
+                            out_file.write(reinterpret_cast <char *> (&board.board()[j][i]), sizeof(short));
+                    out_file.close();
                 }
                     cout << "Game saved.\n";
                     break;
@@ -133,27 +137,17 @@ int main(void)
             if(sym == 'f')
                 continue;
             if(dir != -1)
-                ismoved = shift(a, W, dir);
+                ismoved = board.shift(dir);
         }
         while(!ismoved);
         if(exit)
             break;
         //adding new tile
-        do
-            {
-                x = rand() % W;
-                y = rand() % W;
-            }
-        while(a[y][x] != 0);
-        //some insane random figure to add }=)
-        // a[y][x] = short(16 - ceil(log(rand())/log(2.0)));
-        // a[y][x] = 1;
-        if(rand() % 10 > 1) a[y][x] = 1;
-        else a[y][x] = 2;
+        board.put_random();
         //output
-        output(a, W, counter);
+        output.output();
         //
-        switch(status_checking(a, W))
+        switch(board.status_checking())
         {
             case 1:
                 cout << "You lose. =(\n";
@@ -168,11 +162,9 @@ int main(void)
         }
     }
 
-    for(short i = 0; i < W; i++)
-        delete [] a[i];
-    delete [] a;
-
     cout << "Bye!\n";
 
     return 0;
 }
+
+#endif

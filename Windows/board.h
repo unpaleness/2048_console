@@ -1,5 +1,5 @@
-#ifndef _COUNT_H_
-#define _COUNT_H_
+#ifndef _BOARD_H_
+#define _BOARD_H_
 
 #include <ctime>
 #include <cstdlib>
@@ -10,34 +10,29 @@
 
 class Board
 {
-    // Board()
-    // {
-    //     _size = DEFAULT_SIZE;
-    //     _counter = 0;
-    //     memory_alloc(_size, _board);
-    // }
-    Board(short size, int counter)
-    {
-        _size = size;
-        _counter = counter;
-        memory_alloc(_size, _board);
-    }
-    ~Board() { memory_free(_size, _board); }
+public:
 
-    int counter(void) { return _counter; }
-    const short **board() { return _board; }
+    Board() {}
+    Board(short size) { _init(size); }
+    ~Board() { _memory_free(_size, _board); }
+
+    short **board() { return _board; }
     short size(void) { return _size; }
+
+    //initializes with presented size
+    void init(short size) { _init(size); }
 
     //sets initial value (1) on free space of board
     void put_random(void)
     {
+        short x, y;
         do
         {
             x = rand() % _size;
             y = rand() % _size;
         }
         while(_board[y][x] != 0);
-        _board[y][x] = 1;
+        _board[y][x] = _original_random();
     }
 
     //counts max value on the board
@@ -81,14 +76,19 @@ class Board
         return 0;
     }
 
+    //shift function for self board
+    short shift(short dir)
+    {
+        return shift(_board, dir);
+    }
+
     //dir: odd - horizontal, even - vertical
     //0 - not shifted, 1 - shifted
     short shift(short **board, short dir)
     {
-        if(!board) board = _board
         bool changed = false;
         short **board_rec;
-        memory_alloc(_size, board_rec);
+        _memory_alloc(_size, board_rec);
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
                 board_rec[j][i] = board[j][i];
@@ -261,21 +261,31 @@ class Board
                     break;
                 }
 
-        memory_free(_size, board_rec);
+        _memory_free(_size, board_rec);
 
         if(changed)
             return 1;
         return 0;
     }
 
+    // void print_info()
+    // {
+    //     cout << "size = " << _size << endl;
+    //     for(short j = 0; j < _size; j++)
+    //     {
+    //         for(short i = 0; i < _size; i++)
+    //             cout << _board[j][i] << ' ';
+    //         cout << endl;
+    //     }
+    // }
+
 private:
 
     short _size;
     short **_board;
-    int _counter;
 
     //allocates memory for some matrix
-    void memory_alloc(short size, short **&matrix)
+    void _memory_alloc(short size, short **&matrix)
     {
         matrix = new short *[size];
         for(short i = 0; i < size; i++)
@@ -283,7 +293,7 @@ private:
     }
 
     //frees memory from some matrix
-    void memory_free(short size, short **&matrix)
+    void _memory_free(short size, short **&matrix)
     {
         for(short i = 0; i < size; i++)
             delete [] matrix[i];
@@ -291,11 +301,26 @@ private:
     }
 
     //nullificates board
-    void nullification()
+    void _nullification()
     {
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
                 _board[j][i] = 0;
+    }
+
+    //initializing function
+    void _init(short size)
+    {
+        _size = size;
+        _memory_alloc(size, _board);
+        _nullification();
+    }
+
+    //original adding rule
+    short _original_random()
+    {
+        if(rand() % 10 > 1) return 1;
+        else return 2;
     }
 };
 
@@ -533,4 +558,4 @@ private:
 //     return 0;
 // }
 
-// #endif
+#endif
