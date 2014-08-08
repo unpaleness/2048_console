@@ -17,6 +17,8 @@ public:
         srand(time(0));
         _base = DEFAULT_BASE;
         _size = DEFAULT_SIZE;
+        _random[0] = &_random_simple;
+        _random[1] = &_random_original;
     }
     ~Board(void) { _memory_free(_size, _board); }
 
@@ -36,7 +38,7 @@ public:
     }
 
     //sets initial value (1) on free space of board
-    void put_random(void)
+    void put_random(short random_type)
     {
         short x, y;
         do
@@ -45,7 +47,7 @@ public:
             y = rand() % _size;
         }
         while(_board[y][x] != 0);
-        _board[y][x] = _original_random();
+        _board[y][x] = (*_random[random_type])();
     }
 
     //counts max value on the board
@@ -286,6 +288,7 @@ private:
     short _base;
     short _size;
     short **_board;
+    short (*_random[2])(void);
 
     //allocates memory for some matrix
     void _memory_alloc(short size, short **&matrix)
@@ -311,8 +314,14 @@ private:
                 _board[j][i] = 0;
     }
 
+    //simple adding rule
+    short _random_simple()
+    {
+        return 1;
+    }
+
     //original adding rule
-    short _original_random()
+    short _random_original()
     {
         if(rand() % 10 > 1) return 1;
         else return 2;

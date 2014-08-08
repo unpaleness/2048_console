@@ -86,8 +86,8 @@ private:
         else
         {
             _board->init(_output->ask_to_base(), _output->ask_to_size());
-            _board->put_random();
-            _board->put_random();
+            _board->put_random(0);
+            _board->put_random(0);
         }
     }
 
@@ -137,7 +137,7 @@ private:
             ismoved = false;
             while(!ismoved && !isexit) _key(ismoved, isexit);
             if(isexit) break;
-            _board->put_random();
+            _board->put_random(1);
             _output->output();
             switch(_board->status_checking())
             {
