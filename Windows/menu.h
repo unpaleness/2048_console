@@ -14,13 +14,11 @@ using namespace std;
 #include "board.h"
 #include "output.h"
 
-class Output;
-
 class Menu
 {
 public:
 
-    Menu(void) { _counter = 0; }
+    Menu(void) { _counter = 1; }
     ~Menu(void) {}
 
     //main function
@@ -28,7 +26,7 @@ public:
     {
         _output->message_greeting();
         _setup();
-        _output->init(_board, _counter);
+        _output->init(_board, &_counter);
         _output->output();
         _control();
         _output->message_farewell();
@@ -58,10 +56,11 @@ private:
 
     void _load_from_file(void)
     {
-        short size;
+        short base, size;
         ifstream in_file(FILENAME, ios::in | ios::binary);
+        in_file.read(reinterpret_cast <char *> (&base), sizeof(short));
         in_file.read(reinterpret_cast <char *> (&size), sizeof(short));
-        _board->init(size);
+        _board->init(base, size);
         in_file.read(reinterpret_cast <char *> (&_counter), sizeof(int));
         for(short j = 0; j < size; j++)
             for(short i = 0; i < size; i++)
@@ -72,6 +71,7 @@ private:
     void _save_to_file(void)
     {
         ofstream out_file(FILENAME, ios::out | ios::binary);
+        out_file.write(reinterpret_cast <char *> (_board->base()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (_board->size()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (_counter), sizeof(int));
         for(short j = 0; j < _board->size(); j++)
@@ -85,79 +85,69 @@ private:
         if(_output->ask_to_load()) { _load_from_file(); }
         else
         {
-            short size;
-            cout << "Size = ";
-            cin >> size;
-            _board->init(size);
+            _board->init(_output->ask_to_base(), _output->ask_to_size());
             _board->put_random();
             _board->put_random();
         }
     }
 
-    bool _control(void)
+    void _key(bool &ismoved, bool &isexit)
     {
         char dir, sym;
-        bool ismoved, exit = false;
-        while(!exit)
+        sym = getch();
+        dir = -1;
+        switch(sym)
+        {
+            case 'q':
+                isexit = true;
+                break;
+            case 'w':
+                dir = 0;
+                break;
+            case 'a':
+                dir = 1;
+                break;
+            case 's':
+                dir = 2;
+                break;
+            case 'd':
+                dir = 3;
+                break;
+            case 'f':
+                _save_to_file();
+                _output->message_saved();
+                break;
+            case 'b':
+                _board->base(_output->ask_to_base());
+                _output->output();
+                break;
+            default:
+                break;
+        }
+        if(isexit) _output->message_interrupt();
+        if(dir != -1) ismoved = _board->shift(dir);
+    }
+
+    bool _control(void)
+    {
+        bool ismoved, isexit = false;
+        while(!isexit)
         {
             _counter++;
-            do
-            {
-                ismoved = false;
-                sym = getch();
-                // cin >> sym;
-                dir = -1;
-                switch(sym)
-                {
-                    case 'q':
-                        exit = true;
-                        break;
-                    case 'w':
-                        dir = 0;
-                        break;
-                    case 'a':
-                        dir = 1;
-                        break;
-                    case 's':
-                        dir = 2;
-                        break;
-                    case 'd':
-                        dir = 3;
-                        break;
-                    case 'f':
-                        _save_to_file();
-                        _output->message_saved();
-                        break;
-                    default:
-                        break;
-                }
-                if(exit)
-                {
-                    _output->message_interrupt();
-                    break;
-                }
-                if(sym == 'f')
-                    continue;
-                if(dir != -1)
-                    ismoved = _board->shift(dir);
-            }
-            while(!ismoved);
-            if(exit)
-                break;
-            //adding new tile
+            ismoved = false;
+            while(!ismoved && !isexit) _key(ismoved, isexit);
+            if(isexit) break;
             _board->put_random();
-            //output
             _output->output();
-            //
             switch(_board->status_checking())
             {
                 case 1:
                     _output->message_lose();
-                    exit = true;
+                    isexit = true;
                     break;
                 case 2:
                     // cout << "You win! =)\n";
-                    // exit = true;
+                    // isexit = true;
                     break;
                 default:
                     break;

@@ -8,8 +8,6 @@ using namespace std;
 
 #include "board.h"
 
-class Menu;
-
 char
     sym_border_l[] = " ||||((({{{<<<[[[",
     sym_border_r[] = " ||||)))}}}>>>]]]",
@@ -22,10 +20,10 @@ public:
     Output(void) { cout << fixed; }
     ~Output(void) {}
 
-    void init(Board *board, int counter)
+    void init(Board *board, int *counter)
     {
         _board = board;
-        _counter = &counter;
+        _counter = counter;
     }
 
     void message_greeting(void)
@@ -53,7 +51,7 @@ public:
         cout << "You lose. =(";
     }
 
-    bool ask_to_load(void)
+    short ask_to_load(void)
     {
         short load;
         cout << "Do you want to load previously saved game? (1 - yes, 0 - no): ";
@@ -61,11 +59,27 @@ public:
         return load;
     }
 
+    short ask_to_size(void)
+    {
+        short size;
+        cout << "Size = ";
+        cin >> size;
+        return size;
+    }
+
+    short ask_to_base(void)
+    {
+        short base;
+        cout << "Base = ";
+        cin >> base;
+        return base;
+    }
+
     void output(void)
     {
-        short fig_size = _length_of_figure(pow(BASE, _board->max_val()));
+        short fig_size = _length_of_figure(pow(_board->base(), _board->max_val()));
         system("cls");
-        cout << _counter << " step\n";
+        cout << *_counter << " step\n";
         cout << '#';
         for(short i = 0; i < _board->size() * (fig_size + 2); i++)
             cout << '#';
@@ -85,7 +99,7 @@ public:
                 cout << sym_border_l[_board->board()[j][i]];
                 cout << setw(fig_size);
                 if(_board->board()[j][i] == 0) cout << ' ';
-                else cout << short(pow(BASE, _board->board()[j][i]));
+                else cout << short(pow(_board->base(), _board->board()[j][i]));
                 cout << sym_border_r[_board->board()[j][i]];
             }
             cout << "#\n#";
@@ -106,7 +120,6 @@ private:
 
     const int *_counter;
     Board *_board;
-    Menu *_menu;
 
     //returns the length of required figure
     int _length_of_figure(int figure)
