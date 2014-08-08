@@ -12,15 +12,19 @@ class Board
 {
 public:
 
-    Board() {}
-    Board(short size) { _init(size); }
-    ~Board() { _memory_free(_size, _board); }
+    Board(void) { srand(time(0)); }
+    ~Board(void) { _memory_free(_size, _board); }
 
     short **board() { return _board; }
     short size(void) { return _size; }
 
-    //initializes with presented size
-    void init(short size) { _init(size); }
+    //initializing function
+    void init(short size)
+    {
+        _size = size;
+        _memory_alloc(size, _board);
+        _nullification();
+    }
 
     //sets initial value (1) on free space of board
     void put_random(void)
@@ -306,14 +310,6 @@ private:
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
                 _board[j][i] = 0;
-    }
-
-    //initializing function
-    void _init(short size)
-    {
-        _size = size;
-        _memory_alloc(size, _board);
-        _nullification();
     }
 
     //original adding rule

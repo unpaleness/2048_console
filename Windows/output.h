@@ -7,7 +7,6 @@
 using namespace std;
 
 #include "board.h"
-#include "menu.h"
 
 class Menu;
 
@@ -20,18 +19,53 @@ class Output
 {
 public:
 
-    Output(Board board, Menu menu)
+    Output(void) { cout << fixed; }
+    ~Output(void) {}
+
+    void init(Board *board, int counter)
     {
-        _board = &board;
-        _menu = &menu;
+        _board = board;
+        _counter = &counter;
     }
-    ~Output() {}
+
+    void message_greeting(void)
+    {
+        cout << "Hi!\n";
+    }
+
+    void message_farewell(void)
+    {
+        cout << "Bye!\n";
+    }
+
+    void message_saved(void)
+    {
+        cout << "Game saved.\n";
+    }
+
+    void message_interrupt(void)
+    {
+        cout << "Interrupting...\n";
+    }
+
+    void message_lose(void)
+    {
+        cout << "You lose. =(";
+    }
+
+    bool ask_to_load(void)
+    {
+        short load;
+        cout << "Do you want to load previously saved game? (1 - yes, 0 - no): ";
+        cin >> load;
+        return load;
+    }
 
     void output(void)
     {
-        short fig_size = length_of_figure(pow(BASE, _board->max_val()));
+        short fig_size = _length_of_figure(pow(BASE, _board->max_val()));
         system("cls");
-        cout << _menu->counter() << " step\n";
+        cout << _counter << " step\n";
         cout << '#';
         for(short i = 0; i < _board->size() * (fig_size + 2); i++)
             cout << '#';
@@ -70,11 +104,12 @@ public:
 
 private:
 
+    const int *_counter;
     Board *_board;
     Menu *_menu;
 
     //returns the length of required figure
-    int length_of_figure(int figure)
+    int _length_of_figure(int figure)
     {
         int res = 0;
         while(figure)
@@ -85,57 +120,5 @@ private:
         return res;
     }
 };
-
-// int length_of_figure(int figure)
-// {
-//     int res = 0;
-//     while(figure)
-//     {
-//         figure = (figure - (figure % 10)) / 10;
-//         res++;
-//     }
-//     return res;
-// }
-
-// void output(short **a, short W, int counter)
-// {
-//     short fig_size = length_of_figure(pow(BASE, max_val(a, W)));
-//     system("cls");
-//     cout << counter << " step\n";
-//     cout << '#';
-//     for(short i = 0; i < W * (fig_size + 2); i++)
-//         cout << '#';
-//     cout << "#\n";
-//     for(short j = 0; j < W; j++)
-//     {
-//         cout << '#';
-//         for(short i = 0; i < W; i++)
-//         {
-//             cout << ' ';
-//             for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
-//             cout << ' ';
-//         }
-//         cout << "#\n#";
-//         for(short i = 0; i < W; i++)
-//         {
-//             cout << sym_border_l[a[j][i]];
-//             cout << setw(fig_size);
-//             if(a[j][i] == 0) cout << ' ';
-//             else cout << short(pow(BASE, a[j][i]));
-//             cout << sym_border_r[a[j][i]];
-//         }
-//         cout << "#\n#";
-//         for(short i = 0; i < W; i++)
-//         {   cout << ' ';
-//             for(short k = 0; k < fig_size; k++) cout << sym_horizontal[a[j][i]];
-//             cout << ' ';
-//         }
-//         cout << "#\n";
-//     }
-//     cout << '#';
-//     for(short i = 0; i < W * (fig_size + 2); i++)
-//         cout << '#';
-//     cout << "#\n";
-// }
 
 #endif
