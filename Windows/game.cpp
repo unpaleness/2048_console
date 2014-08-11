@@ -1,22 +1,9 @@
 #ifndef _GAME_CPP_
 #define _GAME_CPP_
 
-// #include <cmath>
-// #include <conio.h>
-// #include <cstdlib>
-// #include <ctime>
-// #include <fstream>
-// #include <iomanip>
-// #include <iostream>
-// #include <windows.h>
-
-// using namespace std;
-
 #include "board.h"
 #include "output.h"
 #include "menu.h"
-
-
 
 int main(void)
 {

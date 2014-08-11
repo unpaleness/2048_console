@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <conio.h>
-#include <windows.h>
 using namespace std;
 
 #define FILENAME "2048.sav"
@@ -93,7 +91,7 @@ private:
     void _key(bool &ismoved, bool &isexit)
     {
         char dir, sym;
-        sym = getch();
+        cin >> sym;
         dir = -1;
         switch(sym)
         {
