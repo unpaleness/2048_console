@@ -2,7 +2,9 @@
 #define _MENU_H_
 
 #include <fstream>
-#include <iomanip>
+#include <stdio.h>
+#include <termios.h>
+// #include <iomanip>
 #include <iostream>
 using namespace std;
 
@@ -10,6 +12,8 @@ using namespace std;
 
 #include "board.h"
 #include "output.h"
+
+static struct termios old_io, new_io;
 
 class Menu
 {
@@ -91,7 +95,8 @@ private:
     void _key(bool &ismoved, bool &isexit)
     {
         char dir, sym;
-        cin >> sym;
+        // cin >> sym;
+        sym = _getch(1);
         dir = -1;
         switch(sym)
         {
@@ -151,7 +156,31 @@ private:
             }
         }
     }
+    /* Initialize new_io terminal i/o settings */
+    void _initTermios(int echo)
+    {
+      tcgetattr(0, &old_io); /* grab old_io terminal i/o settings */
+      new_io = old_io; /* make new_io settings same as old_io settings */
+      new_io.c_lflag &= ~ICANON; /* disable buffered i/o */
+      new_io.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
+      tcsetattr(0, TCSANOW, &new_io); /* use these new_io terminal i/o settings now */
+    }
 
+    /* Restore old_io terminal i/o settings */
+    void _resetTermios(void)
+    {
+      tcsetattr(0, TCSANOW, &old_io);
+    }
+
+    /* Read 1 character - echo defines echo mode */
+    char _getch(int echo)
+    {
+      char ch;
+      _initTermios(echo);
+      ch = getchar();
+      _resetTermios();
+      return ch;
+    }
 };
 
 #endif
