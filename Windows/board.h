@@ -21,8 +21,8 @@ public:
     ~Board(void) { _memory_free(_size, _board); }
 
     short **board() { return _board; }
-    short base(void) { return _base; }
-    short size(void) { return _size; }
+    short &base(void) { return _base; }
+    short &size(void) { return _size; }
 
     void base(short value) { _base = value; }
 
