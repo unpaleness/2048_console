@@ -6,7 +6,7 @@
 #include <windows.h>
 using namespace std;
 
-#include "board.h"
+#include "gameboard.h"
 
 char
     sym_border_l[] = " ||||((({{{<<<[[[",
@@ -20,9 +20,9 @@ public:
     Output(void) { cout << fixed; }
     ~Output(void) {}
 
-    void init(Board *board, int *counter)
+    void init(GameBoard *gameboard, int *counter)
     {
-        _board = board;
+        _gameboard = gameboard;
         _counter = counter;
     }
 
@@ -77,41 +77,41 @@ public:
 
     void output(void)
     {
-        short fig_size = _length_of_figure(pow(_board->base(), _board->max_val()));
+        short fig_size = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
         system("cls");
         cout << *_counter << " step\n";
         cout << '#';
-        for(short i = 0; i < _board->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
             cout << '#';
         cout << "#\n";
-        for(short j = 0; j < _board->size(); j++)
+        for(short j = 0; j < _gameboard->size(); j++)
         {
             cout << '#';
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {
                 cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_board->board()[j][i]];
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n#";
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {
-                cout << sym_border_l[_board->board()[j][i]];
+                cout << sym_border_l[_gameboard->gameboard()[j][i]];
                 cout << setw(fig_size);
-                if(_board->board()[j][i] == 0) cout << ' ';
-                else cout << short(pow(_board->base(), _board->board()[j][i]));
-                cout << sym_border_r[_board->board()[j][i]];
+                if(_gameboard->gameboard()[j][i] == 0) cout << ' ';
+                else cout << short(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
+                cout << sym_border_r[_gameboard->gameboard()[j][i]];
             }
             cout << "#\n#";
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {   cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_board->board()[j][i]];
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n";
         }
         cout << '#';
-        for(short i = 0; i < _board->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
             cout << '#';
         cout << "#\n";
     }
@@ -119,7 +119,7 @@ public:
 private:
 
     const int *_counter;
-    Board *_board;
+    GameBoard *_gameboard;
 
     //returns the length of required figure
     int _length_of_figure(int figure)

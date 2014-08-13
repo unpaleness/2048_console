@@ -10,7 +10,7 @@ using namespace std;
 
 #define FILENAME "2048.sav"
 
-#include "board.h"
+#include "gameboard.h"
 #include "output.h"
 
 class Menu
@@ -25,7 +25,7 @@ public:
     {
         _output->message_greeting();
         _setup();
-        _output->init(_board, &_counter);
+        _output->init(_gameboard, &_counter);
         _output->output();
         _control();
         _output->message_farewell();
@@ -34,10 +34,10 @@ public:
     //returns counter o_O
     short counter(void) { return _counter; }
 
-    //sets pointers to board and output
-    void init(Board *board, Output *output)
+    //sets pointers to gameboard and output
+    void init(GameBoard *gameboard, Output *output)
     {
-        _board = board;
+        _gameboard = gameboard;
         _output = output;
     }
 
@@ -50,7 +50,7 @@ public:
 private:
 
     int _counter;
-    Board *_board;
+    GameBoard *_gameboard;
     Output *_output;
 
     void _load_from_file(void)
@@ -59,23 +59,23 @@ private:
         ifstream in_file(FILENAME, ios::in | ios::binary);
         in_file.read(reinterpret_cast <char *> (&base), sizeof(short));
         in_file.read(reinterpret_cast <char *> (&size), sizeof(short));
-        _board->init(base, size);
+        _gameboard->init(base, size);
         in_file.read(reinterpret_cast <char *> (&_counter), sizeof(int));
         for(short j = 0; j < size; j++)
             for(short i = 0; i < size; i++)
-                in_file.read(reinterpret_cast <char *> (&_board->board()[j][i]), sizeof(short));
+                in_file.read(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
         in_file.close();
     }
 
     void _save_to_file(void)
     {
         ofstream out_file(FILENAME, ios::out | ios::binary);
-        out_file.write(reinterpret_cast <char *> (&_board->base()), sizeof(short));
-        out_file.write(reinterpret_cast <char *> (&_board->size()), sizeof(short));
+        out_file.write(reinterpret_cast <char *> (&_gameboard->base()), sizeof(short));
+        out_file.write(reinterpret_cast <char *> (&_gameboard->size()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (&_counter), sizeof(int));
-        for(short j = 0; j < _board->size(); j++)
-            for(short i = 0; i < _board->size(); i++)
-                out_file.write(reinterpret_cast <char *> (&_board->board()[j][i]), sizeof(short));
+        for(short j = 0; j < _gameboard->size(); j++)
+            for(short i = 0; i < _gameboard->size(); i++)
+                out_file.write(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
         out_file.close();
     }
 
@@ -84,9 +84,9 @@ private:
         if(_output->ask_to_load()) { _load_from_file(); }
         else
         {
-            _board->init(_output->ask_to_base(), _output->ask_to_size());
-            _board->put_random(0);
-            _board->put_random(0);
+            _gameboard->init(_output->ask_to_base(), _output->ask_to_size());
+            _gameboard->put_random(0);
+            _gameboard->put_random(0);
         }
     }
 
@@ -117,14 +117,14 @@ private:
                 _output->message_saved();
                 break;
             case 'b':
-                _board->base(_output->ask_to_base());
+                _gameboard->base(_output->ask_to_base());
                 _output->output();
                 break;
             default:
                 break;
         }
         if(isexit) _output->message_interrupt();
-        if(dir != -1) ismoved = _board->shift(dir);
+        if(dir != -1) ismoved = _gameboard->shift(dir);
     }
 
     bool _control(void)
@@ -135,10 +135,10 @@ private:
             ismoved = false;
             while(!ismoved && !isexit) _key(ismoved, isexit);
             if(isexit) break;
-            _board->put_random(1);
+            _gameboard->put_random(1);
             _counter++;
             _output->output();
-            switch(_board->status_checking())
+            switch(_gameboard->status_checking())
             {
                 case 1:
                     _output->message_lose();

@@ -1,0 +1,333 @@
+#ifndef _BOARD_H_
+#define _BOARD_H_
+
+#include <ctime>
+#include <cstdlib>
+#include <cmath>
+#include <vector>
+
+#define DEFAULT_SIZE 4
+#define DEFAULT_BASE 2
+
+#include "board.h"
+
+//contains all states of the game
+class GameBoard
+{
+public:
+
+    GameBoard(void)
+    {
+        srand(time(0));
+        _base = DEFAULT_BASE;
+        _size = DEFAULT_SIZE;
+    }
+    ~GameBoard(void) { _memory_free(_size, _gameboard); }
+
+    short **gameboard(void) { return _gameboard; }
+    short &base(void) { return _base; }
+    short &size(void) { return _size; }
+
+    void base(short value) { _base = value; }
+
+    //initializing function
+    void init(short base, short size)
+    {
+        _base = base;
+        _size = size;
+        _memory_alloc(size, _gameboard);
+        _nullification();
+    }
+
+    //sets initial value (1) on free space of gameboard
+    void put_random(short random_type)
+    {
+        short x, y;
+        do
+        {
+            x = rand() % _size;
+            y = rand() % _size;
+        }
+        while(_gameboard[y][x] != 0);
+        if(random_type == 0) _gameboard[y][x] = _random_simple();
+        if(random_type == 1) _gameboard[y][x] = _random_original();
+    }
+
+    //counts max value on the gameboard
+    short max_val(void)
+    {
+        short res = 0;
+        for(short j = 0; j < _size; j++)
+            for(short i = 0; i < _size; i++)
+                if(_gameboard[j][i] > res) res = _gameboard[j][i];
+        return res;
+    }
+
+    //0 - continue, 1 - lose, 2 - win
+    short status_checking(void)
+    {
+        short counter = 0, movements = 0;
+        for(short j = 0; j < _size; j++)
+            for(short i = 0; i < _size; i++)
+            {
+                if(_gameboard[j][i] == 11)
+                    return 2;
+                if(_gameboard[j][i] != 0)
+                    counter++;
+            }
+        if(counter == _size * _size)
+        {
+            short **board_temp = new short *[_size];
+            for(short i = 0; i < _size; i++)
+                board_temp[i] = new short [_size];
+            for(short j = 0; j < _size; j++)
+                for(short i = 0; i < _size; i++)
+                    board_temp[j][i] = _gameboard[j][i];
+            for(short i = 0; i < 4; i++)
+                movements += shift(board_temp, i);
+            for(short i = 0; i < _size; i++)
+                delete [] board_temp[i];
+            delete [] board_temp;
+            if(movements == 0)
+                return 1;
+        }
+        return 0;
+    }
+
+    //shift function for self gameboard
+    short shift(short dir)
+    {
+        return shift(_gameboard, dir);
+    }
+
+    //dir: odd - horizontal, even - vertical
+    //0 - not shifted, 1 - shifted
+    short shift(short **gameboard, short dir)
+    {
+        bool changed = false;
+        short **board_rec;
+        _memory_alloc(_size, board_rec);
+        for(short j = 0; j < _size; j++)
+            for(short i = 0; i < _size; i++)
+                board_rec[j][i] = gameboard[j][i];
+        //^
+        if(dir == 0)
+        {
+            //every row..
+            for(short i = 0; i < _size; i++)
+            {
+                short not_0 = 0;
+                //erasing spaces
+                for(short j = 0; j < _size; j++)
+                    if(gameboard[j][i] != 0)
+                    {
+                        not_0++;
+                        if(j != not_0 - 1)
+                        {
+                            gameboard[not_0 - 1][i] = gameboard[j][i];
+                            gameboard[j][i] = 0;
+                        }
+                    }
+                //calculating summas
+                for(short j = 0; j < _size - 1; j++)
+                {
+                    if(gameboard[j][i] != 0)
+                    {
+                        if(gameboard[j][i] == gameboard[j + 1][i])
+                        {
+                            gameboard[j][i]++;
+                            gameboard[j + 1][i] = 0;
+                        }
+                    }
+                    else
+                    {
+                        for(short k = j; k < _size - 1; k++)
+                            gameboard[k][i] = gameboard[k + 1][i];
+                        gameboard[_size - 1][i] = 0;
+                        if(gameboard[j][i] != 0)
+                            j--;
+                    }
+                }
+            }
+        }
+        //<-
+        if(dir == 1)
+        {
+            //every row..
+            for(short j = 0; j < _size; j++)
+            {
+                short not_0 = 0;
+                //erasing spaces
+                for(short i = 0; i < _size; i++)
+                    if(gameboard[j][i] != 0)
+                    {
+                        not_0++;
+                        if(i != not_0 - 1)
+                        {
+                            gameboard[j][not_0 - 1] = gameboard[j][i];
+                            gameboard[j][i] = 0;
+                        }
+                    }
+                //calculating summas
+                for(short i = 0; i < _size - 1; i++)
+                {
+                    if(gameboard[j][i] != 0)
+                    {
+                        if(gameboard[j][i] == gameboard[j][i + 1])
+                        {
+                            gameboard[j][i]++;
+                            gameboard[j][i + 1] = 0;
+                        }
+                    }
+                    else
+                    {
+                        for(short k = i; k < _size - 1; k++)
+                            gameboard[j][k] = gameboard[j][k + 1];
+                        gameboard[j][_size - 1] = 0;
+                        if(gameboard[j][i] != 0)
+                            i--;
+                    }
+                }
+            }
+        }
+        //\/
+        if(dir == 2)
+        {
+            //every row..
+            for(short i = 0; i < _size; i++)
+            {
+                short not_0 = _size - 1;
+                //erasing spaces
+                for(short j = _size - 1; j >= 0; j--)
+                    if(gameboard[j][i] != 0)
+                    {
+                        not_0--;
+                        if(j != not_0 + 1)
+                        {
+                            gameboard[not_0 + 1][i] = gameboard[j][i];
+                            gameboard[j][i] = 0;
+                        }
+                    }
+                //calculating summas
+                for(short j = _size - 1; j > 0; j--)
+                {
+                    if(gameboard[j][i] != 0)
+                    {
+                        if(gameboard[j][i] == gameboard[j - 1][i])
+                        {
+                            gameboard[j][i]++;
+                            gameboard[j - 1][i] = 0;
+                        }
+                    }
+                    else
+                    {
+                        for(short k = j; k > 0; k--)
+                            gameboard[k][i] = gameboard[k - 1][i];
+                        gameboard[0][i] = 0;
+                        if(gameboard[j][i] != 0)
+                            j++;
+                    }
+                }
+            }
+        }
+        //\/
+        if(dir == 3)
+        {
+            //every row..
+            for(short j = 0; j < _size; j++)
+            {
+                short not_0 = _size - 1;
+                //erasing spaces
+                for(short i = _size - 1; i >= 0; i--)
+                    if(gameboard[j][i] != 0)
+                    {
+                        not_0--;
+                        if(i != not_0 + 1)
+                        {
+                            gameboard[j][not_0 + 1] = gameboard[j][i];
+                            gameboard[j][i] = 0;
+                        }
+                    }
+                //calculating summas
+                for(short i = _size - 1; i > 0; i--)
+                {
+                    if(gameboard[j][i] != 0)
+                    {
+                        if(gameboard[j][i] == gameboard[j][i - 1])
+                        {
+                            gameboard[j][i]++;
+                            gameboard[j][i - 1] = 0;
+                        }
+                    }
+                    else
+                    {
+                        for(short k = i; k > 0; k--)
+                            gameboard[j][k] = gameboard[j][k - 1];
+                        gameboard[j][0] = 0;
+                        if(gameboard[j][i] != 0)
+                            i++;
+                    }
+                }
+            }
+        }
+        //checking for changes
+        for(short j = 0; j < _size & !changed; j++)
+            for(short i = 0; i < _size; i++)
+                if(gameboard[j][i] != board_rec[j][i])
+                {
+                    changed = true;
+                    break;
+                }
+
+        _memory_free(_size, board_rec);
+
+        if(changed)
+            return 1;
+        return 0;
+    }
+
+private:
+
+    short _base;
+    short _size;
+    short **_gameboard;
+
+    //allocates memory for some matrix
+    void _memory_alloc(short size, short **&matrix)
+    {
+        matrix = new short *[size];
+        for(short i = 0; i < size; i++)
+            matrix[i] = new short [size];
+    }
+
+    //frees memory from some matrix
+    void _memory_free(short size, short **&matrix)
+    {
+        for(short i = 0; i < size; i++)
+            delete [] matrix[i];
+        delete [] matrix;
+    }
+
+    //nullificates gameboard
+    void _nullification()
+    {
+        for(short j = 0; j < _size; j++)
+            for(short i = 0; i < _size; i++)
+                _gameboard[j][i] = 0;
+    }
+
+    //simple adding rule
+    short _random_simple()
+    {
+        return 1;
+    }
+
+    //original adding rule
+    short _random_original()
+    {
+        if(rand() % 10 > 1) return 1;
+        else return 2;
+    }
+};
+
+#endif

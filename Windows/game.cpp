@@ -1,16 +1,16 @@
 #ifndef _GAME_CPP_
 #define _GAME_CPP_
 
-#include "board.h"
+#include "gameboard.h"
 #include "output.h"
 #include "menu.h"
 
 int main(void)
 {
-    Board board;
+    GameBoard gameboard;
     Output output;
     Menu menu;
-    menu.init(&board, &output);
+    menu.init(&gameboard, &output);
     menu.start();
 
     return 0;
