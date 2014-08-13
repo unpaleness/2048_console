@@ -17,7 +17,7 @@ class Menu
 {
 public:
 
-    Menu(void) { _counter = 0; }
+    Menu(void) { _counter = 1; }
     ~Menu(void) {}
 
     //main function
@@ -71,11 +71,8 @@ private:
     {
         ofstream out_file(FILENAME, ios::out | ios::binary);
         out_file.write(reinterpret_cast <char *> (&_board->base()), sizeof(short));
-        cout << "1";
         out_file.write(reinterpret_cast <char *> (&_board->size()), sizeof(short));
-        cout << "2";
         out_file.write(reinterpret_cast <char *> (&_counter), sizeof(int));
-        cout << "3";
         for(short j = 0; j < _board->size(); j++)
             for(short i = 0; i < _board->size(); i++)
                 out_file.write(reinterpret_cast <char *> (&_board->board()[j][i]), sizeof(short));
@@ -135,11 +132,11 @@ private:
         bool ismoved, isexit = false;
         while(!isexit)
         {
-            _counter++;
             ismoved = false;
             while(!ismoved && !isexit) _key(ismoved, isexit);
             if(isexit) break;
             _board->put_random(1);
+            _counter++;
             _output->output();
             switch(_board->status_checking())
             {

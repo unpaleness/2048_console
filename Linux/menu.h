@@ -135,11 +135,11 @@ private:
         bool ismoved, isexit = false;
         while(!isexit)
         {
-            _counter++;
             ismoved = false;
             while(!ismoved && !isexit) _key(ismoved, isexit);
             if(isexit) break;
             _board->put_random(1);
+            _counter++;
             _output->output();
             switch(_board->status_checking())
             {
