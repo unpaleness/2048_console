@@ -1,14 +1,14 @@
-#ifndef _BOARD_H_
-#define _BOARD_H_
+#ifndef _GAMEBOARD_H_
+#define _GAMEBOARD_H_
 
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
 #include <vector>
 
-#define DEFAULT_SIZE 4
-#define DEFAULT_BASE 2
+#define MEMORY 64
 
+#include "calc.h"
 #include "board.h"
 
 //contains all states of the game
@@ -19,12 +19,12 @@ public:
     GameBoard(void)
     {
         srand(time(0));
-        _base = DEFAULT_BASE;
-        _size = DEFAULT_SIZE;
+        _pos_begin = 0;
+        _pos_current = 0;
     }
-    ~GameBoard(void) { _memory_free(_size, _gameboard); }
+    ~GameBoard(void) {}
 
-    short **gameboard(void) { return _gameboard; }
+    short **gameboard(void) { return _gameboard.board(); }
     short &base(void) { return _base; }
     short &size(void) { return _size; }
 
@@ -35,8 +35,7 @@ public:
     {
         _base = base;
         _size = size;
-        _memory_alloc(size, _gameboard);
-        _nullification();
+        _gameboard.init(_size);
     }
 
     //sets initial value (1) on free space of gameboard
@@ -48,9 +47,9 @@ public:
             x = rand() % _size;
             y = rand() % _size;
         }
-        while(_gameboard[y][x] != 0);
-        if(random_type == 0) _gameboard[y][x] = _random_simple();
-        if(random_type == 1) _gameboard[y][x] = _random_original();
+        while(_gameboard.board()[y][x] != 0);
+        if(random_type == 0) _gameboard.board()[y][x] = _random_simple();
+        if(random_type == 1) _gameboard.board()[y][x] = _random_original();
     }
 
     //counts max value on the gameboard
@@ -59,7 +58,7 @@ public:
         short res = 0;
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
-                if(_gameboard[j][i] > res) res = _gameboard[j][i];
+                if(_gameboard.board()[j][i] > res) res = _gameboard.board()[j][i];
         return res;
     }
 
@@ -70,24 +69,20 @@ public:
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
             {
-                if(_gameboard[j][i] == 11)
+                if(_gameboard.board()[j][i] == 11)
                     return 2;
-                if(_gameboard[j][i] != 0)
+                if(_gameboard.board()[j][i] != 0)
                     counter++;
             }
         if(counter == _size * _size)
         {
-            short **board_temp = new short *[_size];
-            for(short i = 0; i < _size; i++)
-                board_temp[i] = new short [_size];
+            Board tempboard;
+            tempboard.init(_size);
             for(short j = 0; j < _size; j++)
                 for(short i = 0; i < _size; i++)
-                    board_temp[j][i] = _gameboard[j][i];
+                    tempboard.board()[j][i] = _gameboard.board()[j][i];
             for(short i = 0; i < 4; i++)
-                movements += shift(board_temp, i);
-            for(short i = 0; i < _size; i++)
-                delete [] board_temp[i];
-            delete [] board_temp;
+                movements += shift(tempboard, i);
             if(movements == 0)
                 return 1;
         }
@@ -102,14 +97,15 @@ public:
 
     //dir: odd - horizontal, even - vertical
     //0 - not shifted, 1 - shifted
-    short shift(short **gameboard, short dir)
+    short shift(Board &gameboard, short dir)
     {
         bool changed = false;
-        short **board_rec;
-        _memory_alloc(_size, board_rec);
-        for(short j = 0; j < _size; j++)
-            for(short i = 0; i < _size; i++)
-                board_rec[j][i] = gameboard[j][i];
+        Board recboard;
+        recboard.init(_size);
+        recboard = gameboard;
+        // for(short j = 0; j < _size; j++)
+        //     for(short i = 0; i < _size; i++)
+        //         recboard.board()[j][i] = gameboard.board()[j][i];
         //^
         if(dir == 0)
         {
@@ -119,32 +115,32 @@ public:
                 short not_0 = 0;
                 //erasing spaces
                 for(short j = 0; j < _size; j++)
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
                         not_0++;
                         if(j != not_0 - 1)
                         {
-                            gameboard[not_0 - 1][i] = gameboard[j][i];
-                            gameboard[j][i] = 0;
+                            gameboard.board()[not_0 - 1][i] = gameboard.board()[j][i];
+                            gameboard.board()[j][i] = 0;
                         }
                     }
                 //calculating summas
                 for(short j = 0; j < _size - 1; j++)
                 {
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
-                        if(gameboard[j][i] == gameboard[j + 1][i])
+                        if(gameboard.board()[j][i] == gameboard.board()[j + 1][i])
                         {
-                            gameboard[j][i]++;
-                            gameboard[j + 1][i] = 0;
+                            gameboard.board()[j][i]++;
+                            gameboard.board()[j + 1][i] = 0;
                         }
                     }
                     else
                     {
                         for(short k = j; k < _size - 1; k++)
-                            gameboard[k][i] = gameboard[k + 1][i];
-                        gameboard[_size - 1][i] = 0;
-                        if(gameboard[j][i] != 0)
+                            gameboard.board()[k][i] = gameboard.board()[k + 1][i];
+                        gameboard.board()[_size - 1][i] = 0;
+                        if(gameboard.board()[j][i] != 0)
                             j--;
                     }
                 }
@@ -159,32 +155,32 @@ public:
                 short not_0 = 0;
                 //erasing spaces
                 for(short i = 0; i < _size; i++)
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
                         not_0++;
                         if(i != not_0 - 1)
                         {
-                            gameboard[j][not_0 - 1] = gameboard[j][i];
-                            gameboard[j][i] = 0;
+                            gameboard.board()[j][not_0 - 1] = gameboard.board()[j][i];
+                            gameboard.board()[j][i] = 0;
                         }
                     }
                 //calculating summas
                 for(short i = 0; i < _size - 1; i++)
                 {
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
-                        if(gameboard[j][i] == gameboard[j][i + 1])
+                        if(gameboard.board()[j][i] == gameboard.board()[j][i + 1])
                         {
-                            gameboard[j][i]++;
-                            gameboard[j][i + 1] = 0;
+                            gameboard.board()[j][i]++;
+                            gameboard.board()[j][i + 1] = 0;
                         }
                     }
                     else
                     {
                         for(short k = i; k < _size - 1; k++)
-                            gameboard[j][k] = gameboard[j][k + 1];
-                        gameboard[j][_size - 1] = 0;
-                        if(gameboard[j][i] != 0)
+                            gameboard.board()[j][k] = gameboard.board()[j][k + 1];
+                        gameboard.board()[j][_size - 1] = 0;
+                        if(gameboard.board()[j][i] != 0)
                             i--;
                     }
                 }
@@ -199,32 +195,32 @@ public:
                 short not_0 = _size - 1;
                 //erasing spaces
                 for(short j = _size - 1; j >= 0; j--)
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
                         not_0--;
                         if(j != not_0 + 1)
                         {
-                            gameboard[not_0 + 1][i] = gameboard[j][i];
-                            gameboard[j][i] = 0;
+                            gameboard.board()[not_0 + 1][i] = gameboard.board()[j][i];
+                            gameboard.board()[j][i] = 0;
                         }
                     }
                 //calculating summas
                 for(short j = _size - 1; j > 0; j--)
                 {
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
-                        if(gameboard[j][i] == gameboard[j - 1][i])
+                        if(gameboard.board()[j][i] == gameboard.board()[j - 1][i])
                         {
-                            gameboard[j][i]++;
-                            gameboard[j - 1][i] = 0;
+                            gameboard.board()[j][i]++;
+                            gameboard.board()[j - 1][i] = 0;
                         }
                     }
                     else
                     {
                         for(short k = j; k > 0; k--)
-                            gameboard[k][i] = gameboard[k - 1][i];
-                        gameboard[0][i] = 0;
-                        if(gameboard[j][i] != 0)
+                            gameboard.board()[k][i] = gameboard.board()[k - 1][i];
+                        gameboard.board()[0][i] = 0;
+                        if(gameboard.board()[j][i] != 0)
                             j++;
                     }
                 }
@@ -239,47 +235,39 @@ public:
                 short not_0 = _size - 1;
                 //erasing spaces
                 for(short i = _size - 1; i >= 0; i--)
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
                         not_0--;
                         if(i != not_0 + 1)
                         {
-                            gameboard[j][not_0 + 1] = gameboard[j][i];
-                            gameboard[j][i] = 0;
+                            gameboard.board()[j][not_0 + 1] = gameboard.board()[j][i];
+                            gameboard.board()[j][i] = 0;
                         }
                     }
                 //calculating summas
                 for(short i = _size - 1; i > 0; i--)
                 {
-                    if(gameboard[j][i] != 0)
+                    if(gameboard.board()[j][i] != 0)
                     {
-                        if(gameboard[j][i] == gameboard[j][i - 1])
+                        if(gameboard.board()[j][i] == gameboard.board()[j][i - 1])
                         {
-                            gameboard[j][i]++;
-                            gameboard[j][i - 1] = 0;
+                            gameboard.board()[j][i]++;
+                            gameboard.board()[j][i - 1] = 0;
                         }
                     }
                     else
                     {
                         for(short k = i; k > 0; k--)
-                            gameboard[j][k] = gameboard[j][k - 1];
-                        gameboard[j][0] = 0;
-                        if(gameboard[j][i] != 0)
+                            gameboard.board()[j][k] = gameboard.board()[j][k - 1];
+                        gameboard.board()[j][0] = 0;
+                        if(gameboard.board()[j][i] != 0)
                             i++;
                     }
                 }
             }
         }
         //checking for changes
-        for(short j = 0; j < _size & !changed; j++)
-            for(short i = 0; i < _size; i++)
-                if(gameboard[j][i] != board_rec[j][i])
-                {
-                    changed = true;
-                    break;
-                }
-
-        _memory_free(_size, board_rec);
+        if(gameboard != recboard) changed = true;
 
         if(changed)
             return 1;
@@ -288,33 +276,12 @@ public:
 
 private:
 
-    short _base;
-    short _size;
-    short **_gameboard;
-
-    //allocates memory for some matrix
-    void _memory_alloc(short size, short **&matrix)
-    {
-        matrix = new short *[size];
-        for(short i = 0; i < size; i++)
-            matrix[i] = new short [size];
-    }
-
-    //frees memory from some matrix
-    void _memory_free(short size, short **&matrix)
-    {
-        for(short i = 0; i < size; i++)
-            delete [] matrix[i];
-        delete [] matrix;
-    }
-
-    //nullificates gameboard
-    void _nullification()
-    {
-        for(short j = 0; j < _size; j++)
-            for(short i = 0; i < _size; i++)
-                _gameboard[j][i] = 0;
-    }
+    short
+        _pos_begin,
+        _pos_current,
+        _base,
+        _size;
+    Board _gameboard;
 
     //simple adding rule
     short _random_simple()
@@ -327,6 +294,35 @@ private:
     {
         if(rand() % 10 > 1) return 1;
         else return 2;
+    }
+
+    short _pos_next(short pos)
+    {
+        if(pos == MEMORY - 1)
+            return 0;
+        return pos + 1;
+    }
+
+    short _pos_prev(short pos)
+    {
+        if(pos == 0)
+            return MEMORY - 1;
+        return pos - 1;
+    }
+
+    //in case of looping begin position will move up
+    void _pos_current_increment(void)
+    {
+        _pos_current = _pos_next(_pos_current);
+        if(_pos_current == _pos_begin)
+            _pos_begin = _pos_next(_pos_begin);
+    }
+
+    //will not do any thing in case of equality of begin and current positions
+    void _pos_current_decrement(void)
+    {
+        if(_pos_begin != _pos_current)
+            _pos_current = _pos_prev(_pos_current);
     }
 };
 
