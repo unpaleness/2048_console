@@ -3,16 +3,32 @@
 
 namespace calc
 {
-	//allocates memory for some matrix
-    void memory_alloc(short size, short **&matrix)
+    //allocates memory for some array
+    template <class AnyClass>
+    void memory_alloc(short size, AnyClass *&array)
     {
-        matrix = new short *[size];
+        array = new AnyClass [size];
+    }
+
+    //frees memory from some array
+    template <class AnyClass>
+    void memory_free(AnyClass *&array)
+    {
+        delete [] array;
+    }
+
+	//allocates memory for some matrix
+    template <class AnyClass>
+    void memory_alloc(short size, AnyClass **&matrix)
+    {
+        matrix = new AnyClass *[size];
         for(short i = 0; i < size; i++)
-            matrix[i] = new short [size];
+            matrix[i] = new AnyClass [size];
     }
 
     //frees memory from some matrix
-    void memory_free(short size, short **&matrix)
+    template <class AnyClass>
+    void memory_free(short size, AnyClass **&matrix)
     {
         for(short i = 0; i < size; i++)
             delete [] matrix[i];

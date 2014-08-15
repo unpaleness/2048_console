@@ -7,6 +7,7 @@
 #include <vector>
 
 #define MEMORY 64
+#define BASE 2
 
 #include "calc.h"
 #include "board.h"
@@ -21,12 +22,23 @@ public:
         srand(time(0));
         _pos_begin = 0;
         _pos_current = 0;
+        calc::memory_alloc(MEMORY, _gameboard);
     }
-    ~GameBoard(void) {}
+    ~GameBoard(void)
+    {
+        calc::memory_free(_gameboard);
+    }
 
-    short **gameboard(void) { return _gameboard.board(); }
+    short **gameboard(void) { return _gameboard[_pos_current].board(); }
     short &base(void) { return _base; }
     short &size(void) { return _size; }
+    short backsteps(void)
+    {
+        if(_pos_current >= _pos_begin)
+            return _pos_current - _pos_begin;
+        else
+            return _pos_current - _pos_begin + MEMORY;
+    }
 
     void base(short value) { _base = value; }
 
@@ -35,7 +47,8 @@ public:
     {
         _base = base;
         _size = size;
-        _gameboard.init(_size);
+        for(short i = 0; i < MEMORY; i++)
+            _gameboard[i].init(_size);
     }
 
     //sets initial value (1) on free space of gameboard
@@ -47,9 +60,9 @@ public:
             x = rand() % _size;
             y = rand() % _size;
         }
-        while(_gameboard.board()[y][x] != 0);
-        if(random_type == 0) _gameboard.board()[y][x] = _random_simple();
-        if(random_type == 1) _gameboard.board()[y][x] = _random_original();
+        while(_gameboard[_pos_current].board()[y][x] != 0);
+        if(random_type == 0) _gameboard[_pos_current].board()[y][x] = _random_simple();
+        if(random_type == 1) _gameboard[_pos_current].board()[y][x] = _random_original();
     }
 
     //counts max value on the gameboard
@@ -58,8 +71,15 @@ public:
         short res = 0;
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
-                if(_gameboard.board()[j][i] > res) res = _gameboard.board()[j][i];
+                if(_gameboard[_pos_current].board()[j][i] > res)
+                    res = _gameboard[_pos_current].board()[j][i];
         return res;
+    }
+
+    //1 - successfully puts counter on previous position, 0 - no previous position
+    short previous_position()
+    {
+        return _pos_current_decrement();
     }
 
     //0 - continue, 1 - lose, 2 - win
@@ -69,20 +89,20 @@ public:
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
             {
-                if(_gameboard.board()[j][i] == 11)
+                if(_gameboard[_pos_current].board()[j][i] == 11)
                     return 2;
-                if(_gameboard.board()[j][i] != 0)
+                if(_gameboard[_pos_current].board()[j][i] != 0)
                     counter++;
             }
         if(counter == _size * _size)
         {
-            Board tempboard;
+            Board tempboard, rectempboard;
             tempboard.init(_size);
-            for(short j = 0; j < _size; j++)
-                for(short i = 0; i < _size; i++)
-                    tempboard.board()[j][i] = _gameboard.board()[j][i];
+            rectempboard.init(_size);
+            rectempboard = _gameboard[_pos_current];
+            tempboard = _gameboard[_pos_current];
             for(short i = 0; i < 4; i++)
-                movements += shift(tempboard, i);
+                movements += shift(tempboard, rectempboard, i);
             if(movements == 0)
                 return 1;
         }
@@ -92,17 +112,23 @@ public:
     //shift function for self gameboard
     short shift(short dir)
     {
-        return shift(_gameboard, dir);
+        Board tempboard;
+        tempboard.init(_size);
+        tempboard = _gameboard[_pos_current];
+        if (shift(tempboard, _gameboard[_pos_current], dir))
+        {
+            _pos_current_increment();
+            _gameboard[_pos_current] = tempboard;
+            return 1;
+        }
+        return 0;
     }
 
     //dir: odd - horizontal, even - vertical
     //0 - not shifted, 1 - shifted
-    short shift(Board &gameboard, short dir)
+    short shift(Board &gameboard, Board &recboard, short dir)
     {
         bool changed = false;
-        Board recboard;
-        recboard.init(_size);
-        recboard = gameboard;
         // for(short j = 0; j < _size; j++)
         //     for(short i = 0; i < _size; i++)
         //         recboard.board()[j][i] = gameboard.board()[j][i];
@@ -281,7 +307,7 @@ private:
         _pos_current,
         _base,
         _size;
-    Board _gameboard;
+    Board *_gameboard;
 
     //simple adding rule
     short _random_simple()
@@ -319,10 +345,15 @@ private:
     }
 
     //will not do any thing in case of equality of begin and current positions
-    void _pos_current_decrement(void)
+    //0 - successfully, 1 - no previous position
+    short _pos_current_decrement(void)
     {
         if(_pos_begin != _pos_current)
+        {
             _pos_current = _pos_prev(_pos_current);
+            return 1;
+        }
+        return 0;
     }
 };
 

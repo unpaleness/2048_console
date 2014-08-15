@@ -25,14 +25,14 @@ public:
     {
         _output->message_greeting();
         _setup();
-        _output->init(_gameboard, &_counter);
+        _output->init(this, _gameboard, &_counter);
         _output->output();
         _control();
         _output->message_farewell();
     }
 
-    //returns counter o_O
     short counter(void) { return _counter; }
+    bool cheater(void) { return _cheater; }
 
     //sets pointers to gameboard and output
     void init(GameBoard *gameboard, Output *output)
@@ -49,6 +49,7 @@ public:
 
 private:
 
+    bool _cheater;
     int _counter;
     GameBoard *_gameboard;
     Output *_output;
@@ -61,6 +62,7 @@ private:
         in_file.read(reinterpret_cast <char *> (&size), sizeof(short));
         _gameboard->init(base, size);
         in_file.read(reinterpret_cast <char *> (&_counter), sizeof(int));
+        in_file.read(reinterpret_cast <char *> (&_cheater), sizeof(bool));
         for(short j = 0; j < size; j++)
             for(short i = 0; i < size; i++)
                 in_file.read(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
@@ -73,6 +75,7 @@ private:
         out_file.write(reinterpret_cast <char *> (&_gameboard->base()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (&_gameboard->size()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (&_counter), sizeof(int));
+        out_file.write(reinterpret_cast <char *> (&_cheater), sizeof(bool));
         for(short j = 0; j < _gameboard->size(); j++)
             for(short i = 0; i < _gameboard->size(); i++)
                 out_file.write(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
@@ -84,7 +87,7 @@ private:
         if(_output->ask_to_load()) { _load_from_file(); }
         else
         {
-            _gameboard->init(_output->ask_to_base(), _output->ask_to_size());
+            _gameboard->init(BASE, _output->ask_to_size_safe());
             _gameboard->put_random(0);
             _gameboard->put_random(0);
         }
@@ -120,6 +123,19 @@ private:
                 _gameboard->base(_output->ask_to_base());
                 _output->output();
                 break;
+            case 'r':
+                if(_gameboard->previous_position())
+                {
+                    _counter--;
+                    _output->output();
+                }
+                else
+                    _output->message_out_of_returns();
+                break;
+            case '/':
+                _super_mega_cheat();
+                _output->output();
+                break;
             default:
                 break;
         }
@@ -152,6 +168,27 @@ private:
                     break;
             }
         }
+    }
+
+    void _super_mega_cheat(void)
+    {
+        bool correct = true;
+        short symbols = 6;
+        char sym, keyword[] = "double";
+        for(short i = 0; i < symbols; i++)
+        {
+            sym = getch();
+            if(sym != keyword[i])
+            {
+                correct = false;
+                break;
+            }
+        }
+        if(!correct) return;
+        for(short j = 0; j < _gameboard->size(); j++)
+            for(short i = 0; i < _gameboard->size(); i++)
+                if(_gameboard->gameboard()[j][i] != 0)
+                    _gameboard->gameboard()[j][i]++;
     }
 
 };

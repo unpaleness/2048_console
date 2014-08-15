@@ -6,12 +6,15 @@
 #include <windows.h>
 using namespace std;
 
+// #include "menu.h"
 #include "gameboard.h"
 
+class Menu;
+
 char
-    sym_border_l[] = " ||||((({{{<<<[[[",
-    sym_border_r[] = " ||||)))}}}>>>]]]",
-    sym_horizontal[] = " ----~~~+++***===";
+    sym_border_l[] = " ||||((({{{<<<[[[!",
+    sym_border_r[] = " ||||)))}}}>>>]]]!",
+    sym_horizontal[] = " ----~~~+++***===?";
 
 class Output
 {
@@ -20,8 +23,9 @@ public:
     Output(void) { cout << fixed; }
     ~Output(void) {}
 
-    void init(GameBoard *gameboard, int *counter)
+    void init(Menu *menu, GameBoard *gameboard, int *counter)
     {
+        _menu = menu;
         _gameboard = gameboard;
         _counter = counter;
     }
@@ -48,7 +52,28 @@ public:
 
     void message_lose(void)
     {
-        cout << "You lose. =(";
+        cout << "You lose. =(\n";
+    }
+
+    void message_out_of_returns(void)
+    {
+        cout << "You are out of backsteps, my friend. =)\n";
+    }
+
+    void message_backsteps(void)
+    {
+        cout << "Backsteps allowed: " << _gameboard->backsteps() << '\n';
+    }
+
+    void message_counter(void)
+    {
+        cout << _menu->counter() << " step\n";
+    }
+
+    void message_cheater(void)
+    {
+        if(_menu->cheater())
+            cout << "Cheater!";
     }
 
     short ask_to_load(void)
@@ -67,6 +92,17 @@ public:
         return size;
     }
 
+    short ask_to_size_safe(void)
+    {
+        short size = ask_to_size();
+        while(size < 2)
+        {
+            cout << "Size must be not below 2.\n";
+            size = ask_to_size();
+        }
+        return size;
+    }
+
     short ask_to_base(void)
     {
         short base;
@@ -79,7 +115,8 @@ public:
     {
         short fig_size = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
         system("cls");
-        cout << *_counter << " step\n";
+        message_counter();
+        message_backsteps();
         cout << '#';
         for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
             cout << '#';
@@ -99,7 +136,7 @@ public:
                 cout << sym_border_l[_gameboard->gameboard()[j][i]];
                 cout << setw(fig_size);
                 if(_gameboard->gameboard()[j][i] == 0) cout << ' ';
-                else cout << short(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
+                else cout << static_cast<long long>(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
                 cout << sym_border_r[_gameboard->gameboard()[j][i]];
             }
             cout << "#\n#";
@@ -120,11 +157,12 @@ private:
 
     const int *_counter;
     GameBoard *_gameboard;
+    Menu *_menu;
 
     //returns the length of required figure
-    int _length_of_figure(int figure)
+    short _length_of_figure(long long figure)
     {
-        int res = 0;
+        short res = 0;
         while(figure)
         {
             figure = (figure - (figure % 10)) / 10;
