@@ -10,7 +10,7 @@ using namespace std;
 
 #define FILENAME "2048.sav"
 
-#include "board.h"
+#include "gameboard.h"
 #include "output.h"
 
 static struct termios old_io, new_io;
@@ -19,7 +19,11 @@ class Menu
 {
 public:
 
-    Menu(void) { _counter = 1; }
+    Menu(void)
+    {
+        _counter = 1;
+        _cheater = false;
+    }
     ~Menu(void) {}
 
     //main function
@@ -27,19 +31,19 @@ public:
     {
         _output->message_greeting();
         _setup();
-        _output->init(_board, &_counter);
+        _output->init(_gameboard, &_counter, &_cheater);
         _output->output();
         _control();
         _output->message_farewell();
     }
 
-    //returns counter o_O
     short counter(void) { return _counter; }
+    bool cheater(void) { return _cheater; }
 
-    //sets pointers to board and output
-    void init(Board *board, Output *output)
+    //sets pointers to gameboard and output
+    void init(GameBoard *gameboard, Output *output)
     {
-        _board = board;
+        _gameboard = gameboard;
         _output = output;
     }
 
@@ -51,8 +55,9 @@ public:
 
 private:
 
+    bool _cheater;
     int _counter;
-    Board *_board;
+    GameBoard *_gameboard;
     Output *_output;
 
     void _load_from_file(void)
@@ -61,23 +66,25 @@ private:
         ifstream in_file(FILENAME, ios::in | ios::binary);
         in_file.read(reinterpret_cast <char *> (&base), sizeof(short));
         in_file.read(reinterpret_cast <char *> (&size), sizeof(short));
-        _board->init(base, size);
+        _gameboard->init(base, size);
         in_file.read(reinterpret_cast <char *> (&_counter), sizeof(int));
+        in_file.read(reinterpret_cast <char *> (&_cheater), sizeof(bool));
         for(short j = 0; j < size; j++)
             for(short i = 0; i < size; i++)
-                in_file.read(reinterpret_cast <char *> (&_board->board()[j][i]), sizeof(short));
+                in_file.read(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
         in_file.close();
     }
 
     void _save_to_file(void)
     {
         ofstream out_file(FILENAME, ios::out | ios::binary);
-        out_file.write(reinterpret_cast <char *> (&_board->base()), sizeof(short));
-        out_file.write(reinterpret_cast <char *> (&_board->size()), sizeof(short));
+        out_file.write(reinterpret_cast <char *> (&_gameboard->base()), sizeof(short));
+        out_file.write(reinterpret_cast <char *> (&_gameboard->size()), sizeof(short));
         out_file.write(reinterpret_cast <char *> (&_counter), sizeof(int));
-        for(short j = 0; j < _board->size(); j++)
-            for(short i = 0; i < _board->size(); i++)
-                out_file.write(reinterpret_cast <char *> (&_board->board()[j][i]), sizeof(short));
+        out_file.write(reinterpret_cast <char *> (&_cheater), sizeof(bool));
+        for(short j = 0; j < _gameboard->size(); j++)
+            for(short i = 0; i < _gameboard->size(); i++)
+                out_file.write(reinterpret_cast <char *> (&_gameboard->gameboard()[j][i]), sizeof(short));
         out_file.close();
     }
 
@@ -86,9 +93,9 @@ private:
         if(_output->ask_to_load()) { _load_from_file(); }
         else
         {
-            _board->init(_output->ask_to_base(), _output->ask_to_size());
-            _board->put_random(0);
-            _board->put_random(0);
+            _gameboard->init(BASE, _output->ask_to_size_safe());
+            _gameboard->put_random(0);
+            _gameboard->put_random(0);
         }
     }
 
@@ -120,7 +127,20 @@ private:
                 _output->message_saved();
                 break;
             case 'b':
-                _board->base(_output->ask_to_base());
+                _gameboard->base(_output->ask_to_base());
+                _output->output();
+                break;
+            case 'r':
+                if(_gameboard->previous_position())
+                {
+                    _counter--;
+                    _output->output();
+                }
+                else
+                    _output->message_out_of_returns();
+                break;
+            case '/':
+                _super_mega_cheat();
                 _output->output();
                 break;
             default:
@@ -156,14 +176,37 @@ private:
             }
         }
     }
+
+    void _super_mega_cheat(void)
+    {
+        bool correct = true;
+        short symbols = 6;
+        char sym, keyword[] = "double";
+        for(short i = 0; i < symbols; i++)
+        {
+            sym = getch();
+            if(sym != keyword[i])
+            {
+                correct = false;
+                break;
+            }
+        }
+        if(!correct) return;
+        _cheater = true;
+        for(short j = 0; j < _gameboard->size(); j++)
+            for(short i = 0; i < _gameboard->size(); i++)
+                if(_gameboard->gameboard()[j][i] != 0)
+                    _gameboard->gameboard()[j][i]++;
+    }
+
     /* Initialize new_io terminal i/o settings */
     void _initTermios(int echo)
     {
-      tcgetattr(0, &old_io); /* grab old_io terminal i/o settings */
-      new_io = old_io; /* make new_io settings same as old_io settings */
-      new_io.c_lflag &= ~ICANON; /* disable buffered i/o */
+      tcgetattr(0, &old_io);                 /* grab old_io terminal i/o settings */
+      new_io = old_io;                       /* make new_io settings same as old_io settings */
+      new_io.c_lflag &= ~ICANON;             /* disable buffered i/o */
       new_io.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
-      tcsetattr(0, TCSANOW, &new_io); /* use these new_io terminal i/o settings now */
+      tcsetattr(0, TCSANOW, &new_io);        /* use these new_io terminal i/o settings now */
     }
 
     /* Restore old_io terminal i/o settings */

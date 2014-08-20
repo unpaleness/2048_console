@@ -9,12 +9,10 @@ using namespace std;
 // #include "menu.h"
 #include "gameboard.h"
 
-class Menu;
-
 char
-    sym_border_l[] = " ||||((({{{<<<[[[!",
-    sym_border_r[] = " ||||)))}}}>>>]]]!",
-    sym_horizontal[] = " ----~~~+++***===?";
+    sym_border_l[] = " ||||((({{{<<<[[[!!!",
+    sym_border_r[] = " ||||)))}}}>>>]]]!!!",
+    sym_horizontal[] = " ----~~~+++***===???";
 
 class Output
 {
@@ -23,11 +21,11 @@ public:
     Output(void) { cout << fixed; }
     ~Output(void) {}
 
-    void init(Menu *menu, GameBoard *gameboard, int *counter)
+    void init(GameBoard *gameboard, int *counter, bool *cheater)
     {
-        _menu = menu;
         _gameboard = gameboard;
         _counter = counter;
+        _cheater = cheater;
     }
 
     void message_greeting(void)
@@ -67,13 +65,13 @@ public:
 
     void message_counter(void)
     {
-        cout << _menu->counter() << " step\n";
+        cout << *_counter << " step\n";
     }
 
     void message_cheater(void)
     {
-        if(_menu->cheater())
-            cout << "Cheater!";
+        if(*_cheater)
+            cout << "Cheater!\n";
     }
 
     short ask_to_load(void)
@@ -115,6 +113,7 @@ public:
     {
         short fig_size = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
         system("cls");
+        message_cheater();
         message_counter();
         message_backsteps();
         cout << '#';
@@ -155,9 +154,9 @@ public:
 
 private:
 
+    const bool *_cheater;
     const int *_counter;
     GameBoard *_gameboard;
-    Menu *_menu;
 
     //returns the length of required figure
     short _length_of_figure(long long figure)

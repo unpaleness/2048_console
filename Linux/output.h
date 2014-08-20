@@ -5,12 +5,12 @@
 #include <iostream>
 using namespace std;
 
-#include "board.h"
+#include "gameboard.h"
 
 char
-    sym_border_l[] = " ||||((({{{<<<[[[",
-    sym_border_r[] = " ||||)))}}}>>>]]]",
-    sym_horizontal[] = " ----~~~+++***===";
+    sym_border_l[] = " ||||((({{{<<<[[[!!!",
+    sym_border_r[] = " ||||)))}}}>>>]]]!!!",
+    sym_horizontal[] = " ----~~~+++***===???";
 
 class Output
 {
@@ -19,10 +19,11 @@ public:
     Output(void) { cout << fixed; }
     ~Output(void) {}
 
-    void init(Board *board, int *counter)
+    void init(GameBoard *gameboard, int *counter, bool *cheater)
     {
-        _board = board;
+        _gameboard = gameboard;
         _counter = counter;
+        _cheater = cheater;
     }
 
     void message_greeting(void)
@@ -47,7 +48,28 @@ public:
 
     void message_lose(void)
     {
-        cout << "You lose. =(";
+        cout << "You lose. =(\n";
+    }
+
+    void message_out_of_returns(void)
+    {
+        cout << "You are out of backsteps, my friend. =)\n";
+    }
+
+    void message_backsteps(void)
+    {
+        cout << "Backsteps allowed: " << _gameboard->backsteps() << '\n';
+    }
+
+    void message_counter(void)
+    {
+        cout << *_counter << " step\n";
+    }
+
+    void message_cheater(void)
+    {
+        if(*_cheater)
+            cout << "Cheater!\n";
     }
 
     short ask_to_load(void)
@@ -66,6 +88,17 @@ public:
         return size;
     }
 
+    short ask_to_size_safe(void)
+    {
+        short size = ask_to_size();
+        while(size < 2)
+        {
+            cout << "Size must be not below 2.\n";
+            size = ask_to_size();
+        }
+        return size;
+    }
+
     short ask_to_base(void)
     {
         short base;
@@ -76,49 +109,52 @@ public:
 
     void output(void)
     {
-        short fig_size = _length_of_figure(pow(_board->base(), _board->max_val()));
+        short fig_size = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
         cout << "\033[2J\033[1;1H";
-        cout << *_counter << " step\n";
+        message_cheater();
+        message_counter();
+        message_backsteps();
         cout << '#';
-        for(short i = 0; i < _board->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
             cout << '#';
         cout << "#\n";
-        for(short j = 0; j < _board->size(); j++)
+        for(short j = 0; j < _gameboard->size(); j++)
         {
             cout << '#';
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {
                 cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_board->board()[j][i]];
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n#";
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {
-                cout << sym_border_l[_board->board()[j][i]];
+                cout << sym_border_l[_gameboard->gameboard()[j][i]];
                 cout << setw(fig_size);
-                if(_board->board()[j][i] == 0) cout << ' ';
-                else cout << short(pow(_board->base(), _board->board()[j][i]));
-                cout << sym_border_r[_board->board()[j][i]];
+                if(_gameboard->gameboard()[j][i] == 0) cout << ' ';
+                else cout << static_cast<long long>(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
+                cout << sym_border_r[_gameboard->gameboard()[j][i]];
             }
             cout << "#\n#";
-            for(short i = 0; i < _board->size(); i++)
+            for(short i = 0; i < _gameboard->size(); i++)
             {   cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_board->board()[j][i]];
+                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n";
         }
         cout << '#';
-        for(short i = 0; i < _board->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
             cout << '#';
         cout << "#\n";
     }
 
 private:
 
+    const bool *_cheater;
     const int *_counter;
-    Board *_board;
+    GameBoard *_gameboard;
 
     //returns the length of required figure
     int _length_of_figure(int figure)

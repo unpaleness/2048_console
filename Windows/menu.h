@@ -17,7 +17,11 @@ class Menu
 {
 public:
 
-    Menu(void) { _counter = 1; }
+    Menu(void)
+    {
+        _counter = 1;
+        _cheater = false;
+    }
     ~Menu(void) {}
 
     //main function
@@ -25,7 +29,7 @@ public:
     {
         _output->message_greeting();
         _setup();
-        _output->init(this, _gameboard, &_counter);
+        _output->init(_gameboard, &_counter, &_cheater);
         _output->output();
         _control();
         _output->message_farewell();
@@ -185,6 +189,7 @@ private:
             }
         }
         if(!correct) return;
+        _cheater = true;
         for(short j = 0; j < _gameboard->size(); j++)
             for(short i = 0; i < _gameboard->size(); i++)
                 if(_gameboard->gameboard()[j][i] != 0)
