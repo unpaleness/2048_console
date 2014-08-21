@@ -12,6 +12,7 @@
 
 # .cpp.o:
 # 	$(CC) $(CFLAGS) $< -o $@
+
 all: game.out
 
 game.out:

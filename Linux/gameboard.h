@@ -88,8 +88,8 @@ public:
         for(short j = 0; j < _size; j++)
             for(short i = 0; i < _size; i++)
             {
-                if(_gameboard[_pos_current].board()[j][i] == 11)
-                    return 2;
+                // if(_gameboard[_pos_current].board()[j][i] == 11)
+                //     return 2;
                 if(_gameboard[_pos_current].board()[j][i] != 0)
                     counter++;
             }
