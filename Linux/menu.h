@@ -147,7 +147,7 @@ private:
                 break;
         }
         if(isexit) _output->message_interrupt();
-        if(dir != -1) ismoved = _board->shift(dir);
+        if(dir != -1) ismoved = _gameboard->shift(dir);
     }
 
     bool _control(void)
@@ -158,10 +158,10 @@ private:
             ismoved = false;
             while(!ismoved && !isexit) _key(ismoved, isexit);
             if(isexit) break;
-            _board->put_random(1);
+            _gameboard->put_random(1);
             _counter++;
             _output->output();
-            switch(_board->status_checking())
+            switch(_gameboard->status_checking())
             {
                 case 1:
                     _output->message_lose();
@@ -184,7 +184,7 @@ private:
         char sym, keyword[] = "double";
         for(short i = 0; i < symbols; i++)
         {
-            sym = getch();
+            sym = _getch(1);
             if(sym != keyword[i])
             {
                 correct = false;

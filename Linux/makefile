@@ -12,7 +12,7 @@
 
 # .cpp.o:
 # 	$(CC) $(CFLAGS) $< -o $@
-all: ../game.out
+all: game.out
 
-../game.out:
-	g++ game.cpp -O3 -o ../game.out
+game.out:
+	g++ game.cpp -O3 -o game.out
