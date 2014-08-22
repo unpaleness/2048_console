@@ -18,7 +18,7 @@
 
 CXX=g++
 CXXFLAGS=-O3
-TARGET=$(shell basename `pwd`)
+TARGET=game$(shell basename `pwd`)
 SOURCES=$(wildcard *.cpp)
 OBJECTS=$(SOURCES:%.cpp=%.o)
 
