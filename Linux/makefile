@@ -1,19 +1,35 @@
-# CC=g++
-# CFLAGS=-O3
-# CFLAGS=
+# CXX=g++
+# CXXFLAGS=-c
+# LDFLAGS=
 # SOURCES=game.cpp
 # OBJECTS=$(SOURCES:.cpp=.o)
-# EXECUTABLE=../game
+# EXECUTABLE=game.out
 
 # all: $(SOURCES) $(EXECUTABLE)
 
 # $(EXECUTABLE): $(OBJECTS)
-# 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+# 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
 
 # .cpp.o:
-# 	$(CC) $(CFLAGS) $< -o $@
+# 	$(CXX) $(CXXFLAGS) $< -o $@
 
-all: game.out
+# clean:
+# 	rm *.o *.out
 
-game.out:
-	g++ game.cpp -O3 -o game.out
+CXX=g++
+CXXFLAGS=-O3
+TARGET=$(shell basename `pwd`)
+SOURCES=$(wildcard *.cpp)
+OBJECTS=$(SOURCES:%.cpp=%.o)
+
+all: $(TARGET)
+
+$(OBJECTS): $(SOURCES)
+
+$(TARGET): $(OBJECTS)
+	$(CXX) -o $(TARGET) $(CXXFLAGS) $(OBJECTS)
+
+clean:
+	$(RM) $(OBJECTS) $(TARGET)
+
+.PHONY: all clean
