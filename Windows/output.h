@@ -6,6 +6,8 @@
 #include <windows.h>
 using namespace std;
 
+#define FIG_SIZE_MIN 4
+
 // #include "menu.h"
 #include "gameboard.h"
 
@@ -111,13 +113,17 @@ public:
 
     void output(void)
     {
-        short fig_size = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
+        short fig_size_max = _length_of_figure(pow(_gameboard->base(), _gameboard->max_val()));
+        if(fig_size_max < FIG_SIZE_MIN) fig_size_max = FIG_SIZE_MIN;
+        short fig_pos;
+        long long temp;
+
         system("cls");
         message_cheater();
         message_counter();
         message_backsteps();
         cout << '#';
-        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size_max + 2); i++)
             cout << '#';
         cout << "#\n";
         for(short j = 0; j < _gameboard->size(); j++)
@@ -126,28 +132,36 @@ public:
             for(short i = 0; i < _gameboard->size(); i++)
             {
                 cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
+                for(short k = 0; k < fig_size_max; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n#";
             for(short i = 0; i < _gameboard->size(); i++)
             {
+                temp = static_cast<long long>(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
                 cout << sym_border_l[_gameboard->gameboard()[j][i]];
-                cout << setw(fig_size);
-                if(_gameboard->gameboard()[j][i] == 0) cout << ' ';
-                else cout << static_cast<long long>(pow(_gameboard->base(), _gameboard->gameboard()[j][i]));
+                cout << setw(fig_size_max);
+                if(_gameboard->gameboard()[j][i] == 0)
+                    cout << ' ';
+                else
+                {
+                    fig_pos = (fig_size_max -_length_of_figure(temp)) / 2;
+                    cout << setw(fig_size_max - fig_pos) << temp;
+                    for(short j = 0; j < fig_pos; j++)
+                        cout << ' ';
+                }
                 cout << sym_border_r[_gameboard->gameboard()[j][i]];
             }
             cout << "#\n#";
             for(short i = 0; i < _gameboard->size(); i++)
             {   cout << ' ';
-                for(short k = 0; k < fig_size; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
+                for(short k = 0; k < fig_size_max; k++) cout << sym_horizontal[_gameboard->gameboard()[j][i]];
                 cout << ' ';
             }
             cout << "#\n";
         }
         cout << '#';
-        for(short i = 0; i < _gameboard->size() * (fig_size + 2); i++)
+        for(short i = 0; i < _gameboard->size() * (fig_size_max + 2); i++)
             cout << '#';
         cout << "#\n";
     }
